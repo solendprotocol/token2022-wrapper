@@ -1,3 +1,5 @@
+pub mod instruction;
+
 use solana_program::{
     account_info::AccountInfo,
     entrypoint,
