@@ -1,0 +1,12 @@
+[package]
+name = "token2022-wrapper"
+version = "0.1.0"
+edition = "2021"
+crate-type = ["cdylib", "lib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+solana-program = "2.0.1"
+spl-token = "6.0.0"
+spl-token-2022 = "4.0.0"
