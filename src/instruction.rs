@@ -1,4 +1,4 @@
-use solana_program::program_error::ProgramError;
+use solana_program::{msg, program_error::ProgramError};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum TokenWrapperInstruction {
@@ -63,10 +63,33 @@ impl TokenWrapperInstruction {
 
         Ok(
             match tag {
-                _ => {
+                0 => {
                     TokenWrapperInstruction::InitializeToken
                 }
+                1 => {
+                   let (amount, _rest) = Self::unpack_u64(data)?;
+                    TokenWrapperInstruction::DepositAndMintTokens { amount }
+                }
+                2 => {
+                    let (amount, _rest) = Self::unpack_u64(data)?;
+                    TokenWrapperInstruction::WithdrawAndBurnTokens { amount }
+                }
+                _ => return Err(ProgramError::InvalidInstructionData)
             }
         )
+    }
+
+    fn unpack_u64(input: &[u8]) -> Result<(u64, &[u8]), ProgramError> {
+        if input.len() < 8 {
+            msg!("u64 cannot be unpacked");
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        let (bytes, rest) = input.split_at(8);
+        let value = bytes
+            .get(..8)
+            .and_then(|slice| slice.try_into().ok())
+            .map(u64::from_le_bytes)
+            .ok_or(ProgramError::InvalidInstructionData)?;
+        Ok((value, rest))
     }
 }
