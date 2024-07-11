@@ -1,10 +1,10 @@
+pub mod error;
 pub mod instruction;
 pub mod processor;
 pub mod utils;
-pub mod error;
 
-use solana_program::entrypoint;
 use processor::process_instruction;
+use solana_program::entrypoint;
 
 #[cfg(not(feature = "no-entrypoint"))]
 entrypoint!(process_instruction);

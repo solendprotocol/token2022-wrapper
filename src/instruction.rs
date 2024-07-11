@@ -4,9 +4,9 @@ use solana_program::{msg, program_error::ProgramError};
 pub enum TokenWrapperInstruction {
     /// 0
     /// Initializes a vanilla token mint on the Token Program for a particular Token 2022 token
-    /// 
+    ///
     /// Accounts expected by this instruction:
-    /// 
+    ///
     /// 0. `[signer]` The payer paying for the initialization of mint account on the Token program
     /// 1. `[]` Token2022 token mint
     /// 2. `[writable]` Vanilla token mint, uninitialized
@@ -18,9 +18,9 @@ pub enum TokenWrapperInstruction {
 
     /// 1
     /// Mints vanilla tokens created using Token Program in exchange of Token 2022 deposits
-    /// 
+    ///
     /// Accounts expected by this instruction:
-    /// 
+    ///
     /// 0. `[signer]` User authority
     /// 1. `[]` Token2022 token mint
     /// 2. `[]` Vanilla token mint
@@ -31,15 +31,13 @@ pub enum TokenWrapperInstruction {
     /// 6. `[]` Vanilla Token program
     /// 7. `[]` Token2022 program
     /// 8. `[]` System program
-    DepositAndMintTokens {
-        amount: u64
-    },
+    DepositAndMintTokens { amount: u64 },
 
     /// 2
     /// Burns vanilla tokens created using Token Program in exchange of Token 2022 withdrawals
-    /// 
+    ///
     /// Accounts expected by this instruction:
-    /// 
+    ///
     /// 0. `[signer]` User authority
     /// 1. `[]` Token2022 token mint
     /// 2. `[]` Vanilla token mint
@@ -50,9 +48,7 @@ pub enum TokenWrapperInstruction {
     /// 6. `[]` Vanilla Token program
     /// 7. `[]` Token2022 program
     /// 8. `[]` System program
-    WithdrawAndBurnTokens {
-        amount: u64
-    },
+    WithdrawAndBurnTokens { amount: u64 },
 }
 
 impl TokenWrapperInstruction {
@@ -62,22 +58,18 @@ impl TokenWrapperInstruction {
             .split_first()
             .ok_or(ProgramError::InvalidInstructionData)?;
 
-        Ok(
-            match tag {
-                0 => {
-                    TokenWrapperInstruction::InitializeToken
-                }
-                1 => {
-                   let (amount, _rest) = Self::unpack_u64(data)?;
-                    TokenWrapperInstruction::DepositAndMintTokens { amount }
-                }
-                2 => {
-                    let (amount, _rest) = Self::unpack_u64(data)?;
-                    TokenWrapperInstruction::WithdrawAndBurnTokens { amount }
-                }
-                _ => return Err(ProgramError::InvalidInstructionData)
+        Ok(match tag {
+            0 => TokenWrapperInstruction::InitializeToken,
+            1 => {
+                let (amount, _rest) = Self::unpack_u64(data)?;
+                TokenWrapperInstruction::DepositAndMintTokens { amount }
             }
-        )
+            2 => {
+                let (amount, _rest) = Self::unpack_u64(data)?;
+                TokenWrapperInstruction::WithdrawAndBurnTokens { amount }
+            }
+            _ => return Err(ProgramError::InvalidInstructionData),
+        })
     }
 
     fn unpack_u64(input: &[u8]) -> Result<(u64, &[u8]), ProgramError> {
