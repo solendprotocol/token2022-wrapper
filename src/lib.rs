@@ -1,5 +1,7 @@
 pub mod instruction;
 pub mod processor;
+pub mod utils;
+pub mod error;
 
 use solana_program::entrypoint;
 use processor::process_instruction;

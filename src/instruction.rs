@@ -7,12 +7,13 @@ pub enum TokenWrapperInstruction {
     /// 
     /// Accounts expected by this instruction:
     /// 
-    /// 0. `[signer]` Only admin with the authority can call this instruction
+    /// 0. `[signer]` The payer paying for the initialization of mint account on the Token program
     /// 1. `[]` Token2022 token mint
     /// 2. `[writable]` Vanilla token mint, uninitialized
     ///     Must be a PDA with seeds ["vanilla", Token2022 token mint]
     /// 3. `[]` Vanilla Token program
     /// 4. `[]` System program
+    /// 5. `[]` Rent sysvar
     InitializeToken,
 
     /// 1
