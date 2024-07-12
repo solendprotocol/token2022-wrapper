@@ -1,6 +1,8 @@
 use solana_program::{msg, program_error::ProgramError};
+use num_enum::TryFromPrimitive;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+#[derive(TryFromPrimitive, Clone, Copy, PartialEq, Eq)]
 pub enum TokenWrapperInstruction {
     /// 0
     /// Initializes a vanilla token mint on the Token Program for a particular Token 2022 token
@@ -12,11 +14,12 @@ pub enum TokenWrapperInstruction {
     /// 2. `[writable]` Vanilla token mint, uninitialized
     ///     Must be a PDA with seeds ["vanilla", Token2022 token mint]
     /// 3. `[writable]` Reserve authority, uninitialized
+    ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 4. `[writable]` The associated token account of the reserve authority for the vanilla token mint, uninitialized
     /// 3. `[]` Vanilla Token program
     /// 4. `[]` System program
     /// 5. `[]` Rent sysvar
-    InitializeToken,
+    InitializeToken = 0,
 
     /// 1
     /// Mints vanilla tokens created using Token Program in exchange of Token 2022 deposits
@@ -25,18 +28,18 @@ pub enum TokenWrapperInstruction {
     ///
     /// 0. `[signer]` User authority
     /// 1. `[]` Reserve authority
+    ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Mint authority for the vanilla token
     /// 3. `[]` Token2022 token mint
     /// 4. `[]` Vanilla token mint
     /// 5. `[writable]` User's token account for the vanilla token
     /// 6. `[writable]` User's token account for the Token2022 token
     /// 7. `[writable]` Reserve's token account for the Token2022 token
-    ///     Must be a PDA with seeds ["reserve", Token2022 token mint, User's authority pubkey]
     /// 8. `[]` Vanilla Token program
     /// 9. `[]` Token2022 program
     /// 10. `[]` Associated token program
     /// 11. `[]` System program
-    DepositAndMintTokens { amount: u64 },
+    DepositAndMintTokens = 1,
 
     /// 2
     /// Burns vanilla tokens created using Token Program in exchange of Token 2022 withdrawals
@@ -45,41 +48,35 @@ pub enum TokenWrapperInstruction {
     ///
     /// 0. `[signer]` User authority
     /// 1. `[]` Reserve authority
+    ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Token2022 token mint
     /// 3. `[]` Vanilla token mint
     /// 4. `[writable]` User's token account for the vanilla token
     /// 5. `[writable]` User's token account for the Token2022 token
     /// 6. `[writable]` Reserve's token account for the Token2022 token
-    ///     Must be a PDA with seeds ["reserve", Token2022 token mint, User's authority pubkey]
     /// 7. `[]` Vanilla Token program
     /// 8. `[]` Token2022 program
     /// 9. `[]` Associated token program
     /// 10. `[]` System program
-    WithdrawAndBurnTokens { amount: u64 },
+    WithdrawAndBurnTokens = 2,
 }
 
 impl TokenWrapperInstruction {
     // Unpacks a byte buffer into a valid TokenWrapperInstruction
     pub fn unpack(instruction_data: &[u8]) -> Result<Self, ProgramError> {
-        let (tag, data) = instruction_data
+        let (tag, _) = instruction_data
             .split_first()
             .ok_or(ProgramError::InvalidInstructionData)?;
 
         Ok(match tag {
             0 => TokenWrapperInstruction::InitializeToken,
-            1 => {
-                let (amount, _rest) = Self::unpack_u64(data)?;
-                TokenWrapperInstruction::DepositAndMintTokens { amount }
-            }
-            2 => {
-                let (amount, _rest) = Self::unpack_u64(data)?;
-                TokenWrapperInstruction::WithdrawAndBurnTokens { amount }
-            }
+            1 => TokenWrapperInstruction::DepositAndMintTokens,
+            2 => TokenWrapperInstruction::WithdrawAndBurnTokens,
             _ => return Err(ProgramError::InvalidInstructionData),
         })
     }
 
-    fn unpack_u64(input: &[u8]) -> Result<(u64, &[u8]), ProgramError> {
+    pub fn unpack_u64(input: &[u8]) -> Result<(u64, &[u8]), ProgramError> {
         if input.len() < 8 {
             msg!("u64 cannot be unpacked");
             return Err(ProgramError::InvalidInstructionData);
@@ -91,5 +88,9 @@ impl TokenWrapperInstruction {
             .map(u64::from_le_bytes)
             .ok_or(ProgramError::InvalidInstructionData)?;
         Ok((value, rest))
+    }
+    
+    pub fn to_vec(&self) -> Vec<u8> {
+        vec![*self as u8]
     }
 }

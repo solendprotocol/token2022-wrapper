@@ -1,10 +1,5 @@
 use solana_program::{
-    account_info::{next_account_info, AccountInfo},
-    entrypoint::ProgramResult,
-    msg,
-    program::{invoke, invoke_signed},
-    program_pack::Pack,
-    pubkey::Pubkey,
+    account_info::{next_account_info, AccountInfo}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey
 };
 
 use crate::{
@@ -26,12 +21,20 @@ pub fn process_instruction(
 ) -> ProgramResult {
     let instruction = TokenWrapperInstruction::unpack(instruction_data)?;
 
+    let (_, data) = instruction_data
+            .split_first()
+            .ok_or(ProgramError::InvalidInstructionData)?;
+
     match instruction {
         TokenWrapperInstruction::InitializeToken => process_initialize_token(program_id, accounts),
-        TokenWrapperInstruction::DepositAndMintTokens { amount } => {
+        TokenWrapperInstruction::DepositAndMintTokens => {
+            let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
+
             process_deposit_and_mint_tokens(program_id, accounts, amount)
         }
-        TokenWrapperInstruction::WithdrawAndBurnTokens { amount } => {
+        TokenWrapperInstruction::WithdrawAndBurnTokens => {
+            let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
+
             process_withdraw_and_burn_tokens(program_id, accounts, amount)
         }
     }
@@ -264,9 +267,10 @@ pub fn process_withdraw_and_burn_tokens(
     let reserve_token_2022_token_account = next_account_info(accounts_info_iter)?;
     let token_program = next_account_info(accounts_info_iter)?;
     let token_2022_program = next_account_info(accounts_info_iter)?;
-    let associated_token_program = next_account_info(accounts_info_iter)?;
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
+
+    // TODO: Validate if the token accounts are associated token accounts
 
     assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
     assert_is_account_initialized(vanilla_token_mint)?;
@@ -274,7 +278,6 @@ pub fn process_withdraw_and_burn_tokens(
 
     assert_token_program(*token_program.key)?;
     assert_token_2022_program(*token_2022_program.key)?;
-    assert_associated_token_program(*associated_token_program.key)?;
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
