@@ -16,6 +16,20 @@ pub enum TokenWrapperError {
     UnexpectedSystemProgram = 3,
     #[error("Unexpected Rent")]
     UnexpectedRent = 4,
+    #[error("Unexpected initialized account")]
+    UnexpectedInitializedAccount = 5,
+    #[error("Expected initialized account")]
+    ExpectedInitializedAccount = 6,
+    #[error("Unexpected user token account owner")]
+    UnexpectedUserTokenAccountOwner = 7,
+    #[error("Unexpected reserve token account owner")]
+    UnexpectedReserveTokenAccountOwner = 8,
+    #[error("Unexpected reserve authority")]
+    UnexpectedReserveAuthority = 9,
+    #[error("Unexpected mint authority")]
+    UnexpectedMintAuthority = 10,
+    #[error("Unexpected freeze authority")]
+    UnexpectedFreezeAuthority = 11,
 }
 
 impl From<TokenWrapperError> for ProgramError {

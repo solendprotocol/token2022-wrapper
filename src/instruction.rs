@@ -11,6 +11,8 @@ pub enum TokenWrapperInstruction {
     /// 1. `[]` Token2022 token mint
     /// 2. `[writable]` Vanilla token mint, uninitialized
     ///     Must be a PDA with seeds ["vanilla", Token2022 token mint]
+    /// 3. `[writable]` Reserve authority, uninitialized
+    /// 4. `[writable]` The associated token account of the reserve authority for the vanilla token mint, uninitialized 
     /// 3. `[]` Vanilla Token program
     /// 4. `[]` System program
     /// 5. `[]` Rent sysvar
@@ -22,15 +24,18 @@ pub enum TokenWrapperInstruction {
     /// Accounts expected by this instruction:
     ///
     /// 0. `[signer]` User authority
-    /// 1. `[]` Token2022 token mint
-    /// 2. `[]` Vanilla token mint
-    /// 3. `[writable]` User's token account for the vanilla token
-    /// 4. `[writable]` User's token account for the Token2022 token
-    /// 5. `[writable]` Reserve's token account for the Token2022 token
+    /// 1. `[]` Reserve authority
+    /// 2. `[]` Mint authority for the vanilla token
+    /// 3. `[]` Token2022 token mint
+    /// 4. `[]` Vanilla token mint
+    /// 5. `[writable]` User's token account for the vanilla token
+    /// 6. `[writable]` User's token account for the Token2022 token
+    /// 7. `[writable]` Reserve's token account for the Token2022 token
     ///     Must be a PDA with seeds ["reserve", Token2022 token mint, User's authority pubkey]
-    /// 6. `[]` Vanilla Token program
-    /// 7. `[]` Token2022 program
-    /// 8. `[]` System program
+    /// 8. `[]` Vanilla Token program
+    /// 9. `[]` Token2022 program
+    /// 10. `[]` Associated token program
+    /// 11. `[]` System program
     DepositAndMintTokens { amount: u64 },
 
     /// 2
@@ -39,15 +44,17 @@ pub enum TokenWrapperInstruction {
     /// Accounts expected by this instruction:
     ///
     /// 0. `[signer]` User authority
-    /// 1. `[]` Token2022 token mint
-    /// 2. `[]` Vanilla token mint
-    /// 3. `[writable]` User's token account for the vanilla token
-    /// 4. `[writable]` User's token account for the Token2022 token
-    /// 5. `[writable]` Reserve's token account for the Token2022 token
+    /// 1. `[]` Reserve authority
+    /// 2. `[]` Token2022 token mint
+    /// 3. `[]` Vanilla token mint
+    /// 4. `[writable]` User's token account for the vanilla token
+    /// 5. `[writable]` User's token account for the Token2022 token
+    /// 6. `[writable]` Reserve's token account for the Token2022 token
     ///     Must be a PDA with seeds ["reserve", Token2022 token mint, User's authority pubkey]
-    /// 6. `[]` Vanilla Token program
-    /// 7. `[]` Token2022 program
-    /// 8. `[]` System program
+    /// 7. `[]` Vanilla Token program
+    /// 8. `[]` Token2022 program
+    /// 9. `[]` Associated token program
+    /// 10. `[]` System program
     WithdrawAndBurnTokens { amount: u64 },
 }
 
