@@ -12,7 +12,7 @@ pub enum TokenWrapperInstruction {
     /// 2. `[writable]` Vanilla token mint, uninitialized
     ///     Must be a PDA with seeds ["vanilla", Token2022 token mint]
     /// 3. `[writable]` Reserve authority, uninitialized
-    /// 4. `[writable]` The associated token account of the reserve authority for the vanilla token mint, uninitialized 
+    /// 4. `[writable]` The associated token account of the reserve authority for the vanilla token mint, uninitialized
     /// 3. `[]` Vanilla Token program
     /// 4. `[]` System program
     /// 5. `[]` Rent sysvar
