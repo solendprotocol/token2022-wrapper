@@ -30,6 +30,8 @@ TransactionFailed {
 TransportError(#[from] TransportError),
 #[error("Program Error")]
 ProgramError(#[from] ProgramError),
+#[error("Invalid data")]
+InvalidData
 }
 
 pub struct TestClient {

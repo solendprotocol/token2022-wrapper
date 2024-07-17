@@ -14,14 +14,13 @@ pub async fn sign_send_instructions(client: &mut TestClient, ixs: &[Instruction]
     transaction.sign(&signers, client.banks_client.get_latest_blockhash().await.unwrap());
 
     if label.is_some() {
-        println!("Processing transaction: {:?}", label);
+        // println!("Processing transaction: {:?}", label);
     }
 
     let signatures = transaction.signatures.clone();
 
     let res = match client.banks_client.process_transaction(transaction).await {
         Ok(_) => {
-            println!("Success: {:?}", signatures[0]);
             return Ok(signatures);
         },
         Err(e) => {
@@ -64,8 +63,41 @@ pub async fn create_associated_token_account(
 
     let res = match sign_send_instructions(client, &ixs, vec![&client.get_payer_clone()], Some(format!("Creating associated token account: {}", ata_addr.to_string()).as_str())).await {
         Ok(_) => {
-            println!("Associated token account created successfully");
             return Ok(ata_addr);
+        },
+        Err(e) => {
+            println!("Error creating ata: {:?}", e);
+            Err(e)
+        }
+    };
+
+    res
+}
+
+pub async fn create_token_account_token_2022(
+    client: &mut TestClient,
+    owner: &Pubkey,
+    token_mint: &Pubkey,
+) -> TransactionResult<Pubkey> {
+    let account = Keypair::new();
+
+    let rent = client.banks_client.get_rent().await.unwrap();
+    let account_rent = rent.minimum_balance(spl_token_2022::state::Account::LEN);
+
+    let ixs = vec![
+        system_instruction::create_account(
+            &client.payer.pubkey(),
+            &account.pubkey(),
+            account_rent,
+            spl_token_2022::state::Account::LEN as u64,
+            &spl_token_2022::id(),
+        ),
+        spl_token_2022::instruction::initialize_account(&spl_token_2022::id(), &account.pubkey(), token_mint, owner).unwrap()
+    ];
+
+    let res = match sign_send_instructions(client, &ixs, vec![&client.get_payer_clone(), &account], Some(format!("Creating associated token account: {}", &account.pubkey().to_string()).as_str())).await {
+        Ok(_) => {
+            return Ok(account.pubkey());
         },
         Err(e) => {
             println!("Error creating ata: {:?}", e);
@@ -95,6 +127,15 @@ pub async fn get_token_account(
     Ok(spl_token::state::Account::unpack(&account.data).unwrap())
 }
 
+pub async fn get_token_mint(
+    client: &mut TestClient,
+    token_mint: &Pubkey,
+) -> TransactionResult<spl_token::state::Mint> {
+    let account = get_account(client, token_mint).await;
+
+    Ok(spl_token::state::Mint::unpack(&account.data).unwrap())
+}
+
 pub async fn airdrop(
     client: &mut TestClient,
     receiver: &Pubkey,
@@ -108,7 +149,6 @@ pub async fn airdrop(
 
     let res = match sign_send_instructions(client, &ixs, vec![&client.get_payer_clone()], Some(format!("Airdropping {} SOL to {}", amount, receiver.to_string()).as_str())).await {
         Ok(_) => {
-            println!("Airdrop success");
             Ok(())
         },
         Err(e) => {
@@ -157,7 +197,6 @@ pub async fn create_mint(
 
     let res = match sign_send_instructions(client, &ixs, vec![&client_keypair, &mint], Some(format!("Creating mint: {}", token_mint.to_string()).as_str())).await {
         Ok(_) => {
-            println!("Token mint created successfully: {}", &mint.pubkey());
             Ok(mint.pubkey())
         },
         Err(e) => {
@@ -196,7 +235,6 @@ pub async fn mint_tokens(
 
     let res = match sign_send_instructions(client, &vec![ix], signing_keypairs, Some(format!("Minting tokens {} to {}", mint.to_string(), account.to_string()).as_str())).await {
         Ok(_) => {
-            println!("Token {} minted to {} successfully", mint, account);
             Ok(())
         },
         Err(e) => {
@@ -241,7 +279,6 @@ pub async fn create_token_2022_mint(
 
     let res = match sign_send_instructions(client, &ixs, vec![&client_keypair, &mint], Some(format!("Creating mint: {}", token_mint.to_string()).as_str())).await {
         Ok(_) => {
-            println!("Created Token 2022 mint: {}", &mint.pubkey());
             Ok(mint.pubkey())
         },
         Err(e) => {
@@ -268,6 +305,17 @@ pub async fn mint_token_2022_tokens(
         signing_keypairs.push(signer);
     }
 
+    let token_data = get_token_mint(client, mint).await;
+
+    let decimals = match token_data {
+        Ok(dec) => dec.decimals,
+        Err(_) => std::u8::MAX
+    };
+
+    if decimals == std::u8::MAX {
+        return Err(TransactionError::InvalidData);
+    }
+    
     let ix = spl_token_2022::instruction::mint_to_checked(
         &spl_token_2022::id(), 
         mint, 
@@ -275,12 +323,11 @@ pub async fn mint_token_2022_tokens(
         &authority.pubkey(), 
         &[&authority.pubkey()], 
         amount,
-        5
+        decimals
     ).unwrap();
 
     let res = match sign_send_instructions(client, &vec![ix], signing_keypairs, Some(format!("Minting token {} to {}", mint.to_string(), account.to_string()).as_str())).await {
         Ok(_) => {
-            println!("Token 2022 --> Minted token {} to {} successfully", &mint, &account);
             Ok(())
         },
         Err(e) => {
@@ -290,4 +337,11 @@ pub async fn mint_token_2022_tokens(
     };
 
     res
+}
+
+pub fn assert_with_msg(v: bool, msg: &str) {
+    if !v {
+        let caller = std::panic::Location::caller();
+        println!("{}. \n{}", msg, caller);
+    }
 }

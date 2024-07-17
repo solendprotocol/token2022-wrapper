@@ -1,6 +1,11 @@
 use solana_program::{
     account_info::{next_account_info, AccountInfo}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey
 };
+use solana_program::instruction::{Instruction, AccountMeta};
+use solana_program::system_instruction::SystemInstruction;
+use solana_sdk::sysvar::Sysvar;
+use spl_token::state::Mint;
+use solana_program::rent::Rent;
 
 use crate::{
     error::TokenWrapperError,
@@ -69,6 +74,45 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
+    let (_, _, vanilla_token_mint_seeds) =
+    get_vanilla_token_mint(*token_2022_mint.key, *program_id);
+
+    msg!("Payer: {}", *payer.key);
+    msg!("Vanilla token mint: {}", *vanilla_token_mint.key);
+
+    let mint_data_length = Mint::LEN as u64;
+    let rent = Rent::get().unwrap();
+    let mint_lamports = rent.minimum_balance(mint_data_length as usize);
+
+    let create_mint_account_ix = 
+    Instruction::new_with_bincode(
+        *system_program.key,
+        &SystemInstruction::CreateAccount {
+            lamports: mint_lamports,
+            space: mint_data_length,
+            owner: spl_token::id(),
+        },
+        vec![
+            AccountMeta::new(*payer.key, true),
+            AccountMeta::new(*vanilla_token_mint.key, true),
+        ],
+    );
+
+    invoke_signed(
+        &create_mint_account_ix,
+        &[
+            payer.clone(),
+            vanilla_token_mint.clone(),
+            system_program.clone()
+        ],
+        &[vanilla_token_mint_seeds
+            .iter()
+            .map(|seed| seed.as_slice())
+            .collect::<Vec<&[u8]>>()
+            .as_slice()
+        ],
+    )?;
+
     let init_mint_ix = spl_token::instruction::initialize_mint(
         token_program.key,
         vanilla_token_mint.key,
@@ -76,9 +120,6 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
         Some(&freeze_authority),
         token_2022_mint_data.decimals,
     )?;
-
-    let (_, _, vanilla_token_mint_seeds) =
-        get_vanilla_token_mint(*token_2022_mint.key, *program_id);
 
     invoke_signed(
         &init_mint_ix,
