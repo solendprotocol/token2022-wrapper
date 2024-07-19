@@ -7,7 +7,7 @@ use crate::error::TokenWrapperError;
 
 use super::{
     get_reserve_authority, get_reserve_authority_token_account, get_token_freeze_authority,
-    get_token_mint_authority, get_vanilla_token_mint,
+    get_token_mint_authority, get_wrapper_token_mint,
 };
 
 #[track_caller]
@@ -62,17 +62,17 @@ pub fn assert_rent(p: Pubkey) -> ProgramResult {
     )
 }
 
-pub fn assert_vanilla_token_mint(
+pub fn assert_wrapper_token_mint(
     token_2022_mint: Pubkey,
     program_id: Pubkey,
-    actual_vanilla_token_mint: Pubkey,
+    actual_wrapper_token_mint: Pubkey,
 ) -> ProgramResult {
-    let (expected_vanilla_token_mint, _, _) = get_vanilla_token_mint(token_2022_mint, program_id);
+    let (expected_wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, program_id);
 
     assert_with_msg(
-        expected_vanilla_token_mint == actual_vanilla_token_mint,
-        TokenWrapperError::UnexpectedVanillaToken,
-        "Invalid vanilla token mint passed",
+        expected_wrapper_token_mint == actual_wrapper_token_mint,
+        TokenWrapperError::UnexpectedWrapperToken,
+        "Invalid wrapper token mint passed",
     )
 }
 

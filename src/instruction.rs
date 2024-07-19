@@ -5,47 +5,47 @@ use solana_program::{msg, program_error::ProgramError};
 #[derive(TryFromPrimitive, Clone, Copy, PartialEq, Eq)]
 pub enum TokenWrapperInstruction {
     /// 0
-    /// Initializes a vanilla token mint on the Token Program for a particular Token 2022 token
+    /// Initializes a wrapper token mint on the Token Program for a particular Token 2022 token
     ///
     /// Accounts expected by this instruction:
     ///
     /// 0. `[signer]` The payer paying for the initialization of mint account on the Token program
     /// 1. `[]` Token2022 token mint
-    /// 2. `[writable]` Vanilla token mint, uninitialized
-    ///     Must be a PDA with seeds ["vanilla", Token2022 token mint]
+    /// 2. `[writable]` Wrapper token mint, uninitialized
+    ///     Must be a PDA with seeds ["wrapper", Token2022 token mint]
     /// 3. `[writable]` Reserve authority, uninitialized
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 4. `[writable]` Reserve authority token account, uninitialized
     ///     Must be a PDA with seeds ["reserve_authority_token_account", Token2022 token mint, reserve_authority PDA pubkey]
-    /// 3. `[]` Vanilla Token program
+    /// 3. `[]` SPL Token program
     /// 4. `[]` Token 2022 program
     /// 5. `[]` System program
     /// 6. `[]` Rent sysvar
-    InitializeToken = 0,
+    InitializeWrapperToken = 0,
 
     /// 1
-    /// Mints vanilla tokens created using Token Program in exchange of Token 2022 deposits
+    /// Mints wrapper tokens created using SPL Token Program in exchange of Token 2022 deposits
     ///
     /// Accounts expected by this instruction:
     ///
     /// 0. `[signer]` User authority
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
-    /// 2. `[]` Mint authority for the vanilla token
+    /// 2. `[]` Mint authority for the wrapper token
     ///     Must be a PDA with seeds ["min_authority", Token2022 token mint]
     /// 3. `[]` Token2022 token mint
-    /// 4. `[]` Vanilla token mint
-    /// 5. `[writable]` User's token account for the vanilla token
+    /// 4. `[]` Wrapper token mint
+    /// 5. `[writable]` User's token account for the wrapper token
     /// 6. `[writable]` User's token account for the Token2022 token
     /// 7. `[writable]` Reserve's token account for the Token2022 token
-    /// 8. `[]` Vanilla Token program
+    /// 8. `[]` SPL Token program
     /// 9. `[]` Token2022 program
     /// 10. `[]` System program
     /// 11. `[]` Rent sysvar
-    DepositAndMintTokens = 1,
+    DepositAndMintWrapperTokens = 1,
 
     /// 2
-    /// Burns vanilla tokens created using Token Program in exchange of Token 2022 withdrawals
+    /// Burns wrapper tokens created using Token Program in exchange of Token 2022 withdrawals
     ///
     /// Accounts expected by this instruction:
     ///
@@ -53,15 +53,15 @@ pub enum TokenWrapperInstruction {
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Token2022 token mint
-    /// 3. `[]` Vanilla token mint
-    /// 4. `[writable]` User's token account for the vanilla token
+    /// 3. `[]` Wrapper token mint
+    /// 4. `[writable]` User's token account for the wrapper token
     /// 5. `[writable]` User's token account for the Token2022 token
     /// 6. `[writable]` Reserve's token account for the Token2022 token
-    /// 7. `[]` Vanilla Token program
+    /// 7. `[]` SPL Token program
     /// 8. `[]` Token2022 program
     /// 9. `[]` System program
     /// 10. `[]` Rent sysvar
-    WithdrawAndBurnTokens = 2,
+    WithdrawAndBurnWrapperTokens = 2,
 }
 
 impl TokenWrapperInstruction {
@@ -72,9 +72,9 @@ impl TokenWrapperInstruction {
             .ok_or(ProgramError::InvalidInstructionData)?;
 
         Ok(match tag {
-            0 => TokenWrapperInstruction::InitializeToken,
-            1 => TokenWrapperInstruction::DepositAndMintTokens,
-            2 => TokenWrapperInstruction::WithdrawAndBurnTokens,
+            0 => TokenWrapperInstruction::InitializeWrapperToken,
+            1 => TokenWrapperInstruction::DepositAndMintWrapperTokens,
+            2 => TokenWrapperInstruction::WithdrawAndBurnWrapperTokens,
             _ => return Err(ProgramError::InvalidInstructionData),
         })
     }

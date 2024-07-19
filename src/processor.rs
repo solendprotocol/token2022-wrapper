@@ -22,9 +22,9 @@ use crate::{
         assert_is_account_initialized, assert_is_account_uninitialized, assert_mint_authority,
         assert_rent, assert_reserve_authority, assert_reserve_authority_token_account,
         assert_system_program, assert_token_2022_program, assert_token_program,
-        assert_vanilla_token_mint, assert_with_msg, get_reserve_authority,
+        assert_wrapper_token_mint, assert_with_msg, get_reserve_authority,
         get_reserve_authority_token_account, get_token_freeze_authority, get_token_mint_authority,
-        get_vanilla_token_mint,
+        get_wrapper_token_mint,
     },
 };
 
@@ -40,27 +40,27 @@ pub fn process_instruction(
         .ok_or(ProgramError::InvalidInstructionData)?;
 
     match instruction {
-        TokenWrapperInstruction::InitializeToken => process_initialize_token(program_id, accounts),
-        TokenWrapperInstruction::DepositAndMintTokens => {
+        TokenWrapperInstruction::InitializeWrapperToken => process_initialize_wrapper_token(program_id, accounts),
+        TokenWrapperInstruction::DepositAndMintWrapperTokens => {
             let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
 
-            process_deposit_and_mint_tokens(program_id, accounts, amount)
+            process_deposit_and_mint_wrapper_tokens(program_id, accounts, amount)
         }
-        TokenWrapperInstruction::WithdrawAndBurnTokens => {
+        TokenWrapperInstruction::WithdrawAndBurnWrapperTokens => {
             let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
 
-            process_withdraw_and_burn_tokens(program_id, accounts, amount)
+            process_withdraw_and_burn_wrapper_tokens(program_id, accounts, amount)
         }
     }
 }
 
-pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
-    msg!("TokenWrapperInstruction::InitializeToken");
+pub fn process_initialize_wrapper_token(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+    msg!("TokenWrapperInstruction::InitializeWrapperToken");
 
     let accounts_info_iter = &mut accounts.iter();
     let payer = next_account_info(accounts_info_iter)?;
     let token_2022_mint = next_account_info(accounts_info_iter)?;
-    let vanilla_token_mint = next_account_info(accounts_info_iter)?;
+    let wrapper_token_mint = next_account_info(accounts_info_iter)?;
     let reserve_authority = next_account_info(accounts_info_iter)?;
     let reserve_token_2022_token_account = next_account_info(accounts_info_iter)?;
     let token_program = next_account_info(accounts_info_iter)?;
@@ -68,14 +68,14 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    let (mint_authority, _, _) = get_token_mint_authority(*vanilla_token_mint.key, *program_id);
-    let (freeze_authority, _, _) = get_token_freeze_authority(*vanilla_token_mint.key, *program_id);
+    let (mint_authority, _, _) = get_token_mint_authority(*wrapper_token_mint.key, *program_id);
+    let (freeze_authority, _, _) = get_token_freeze_authority(*wrapper_token_mint.key, *program_id);
 
     let unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_data()?;
     let token_2022_mint_data =
         spl_token_2022::state::Mint::unpack(&unwrapped_token_2022_mint_data)?;
 
-    assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
+    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
@@ -83,7 +83,7 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
         *program_id,
         *reserve_token_2022_token_account.key,
     )?;
-    assert_is_account_uninitialized(vanilla_token_mint)?;
+    assert_is_account_uninitialized(wrapper_token_mint)?;
     assert_is_account_uninitialized(reserve_authority)?;
     assert_is_account_uninitialized(reserve_token_2022_token_account)?;
 
@@ -91,8 +91,8 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
-    let (_, _, vanilla_token_mint_seeds) =
-        get_vanilla_token_mint(*token_2022_mint.key, *program_id);
+    let (_, _, wrapper_token_mint_seeds) =
+        get_wrapper_token_mint(*token_2022_mint.key, *program_id);
 
     let (_, _, reserve_authority_seeds) = get_reserve_authority(*token_2022_mint.key, *program_id);
 
@@ -115,7 +115,7 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
         },
         vec![
             AccountMeta::new(*payer.key, true),
-            AccountMeta::new(*vanilla_token_mint.key, true),
+            AccountMeta::new(*wrapper_token_mint.key, true),
         ],
     );
 
@@ -123,10 +123,10 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
         &create_mint_account_ix,
         &[
             payer.clone(),
-            vanilla_token_mint.clone(),
+            wrapper_token_mint.clone(),
             system_program.clone(),
         ],
-        &[vanilla_token_mint_seeds
+        &[wrapper_token_mint_seeds
             .iter()
             .map(|seed| seed.as_slice())
             .collect::<Vec<&[u8]>>()
@@ -135,7 +135,7 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
 
     let init_mint_ix = spl_token::instruction::initialize_mint(
         token_program.key,
-        vanilla_token_mint.key,
+        wrapper_token_mint.key,
         &mint_authority,
         Some(&freeze_authority),
         token_2022_mint_data.decimals,
@@ -144,12 +144,12 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
     invoke_signed(
         &init_mint_ix,
         &[
-            vanilla_token_mint.clone(),
+            wrapper_token_mint.clone(),
             rent_sysvar.clone(),
             token_program.clone(),
             payer.clone(),
         ],
-        &[vanilla_token_mint_seeds
+        &[wrapper_token_mint_seeds
             .iter()
             .map(|seed| seed.as_slice())
             .collect::<Vec<&[u8]>>()
@@ -227,20 +227,20 @@ pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -
     Ok(())
 }
 
-pub fn process_deposit_and_mint_tokens(
+pub fn process_deposit_and_mint_wrapper_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
 ) -> ProgramResult {
-    msg!("TokenWrapperInstruction::DepositAndMintTokens");
+    msg!("TokenWrapperInstruction::DepositAndMintWrapperTokens");
 
     let accounts_info_iter = &mut accounts.iter();
     let user_authority = next_account_info(accounts_info_iter)?;
     let reserve_authority = next_account_info(accounts_info_iter)?;
     let mint_authority = next_account_info(accounts_info_iter)?;
     let token_2022_mint = next_account_info(accounts_info_iter)?;
-    let vanilla_token_mint = next_account_info(accounts_info_iter)?;
-    let user_vanilla_token_account = next_account_info(accounts_info_iter)?;
+    let wrapper_token_mint = next_account_info(accounts_info_iter)?;
+    let user_wrapper_token_account = next_account_info(accounts_info_iter)?;
     let user_token_2022_token_account = next_account_info(accounts_info_iter)?;
     let reserve_token_2022_token_account = next_account_info(accounts_info_iter)?;
     let token_program = next_account_info(accounts_info_iter)?;
@@ -248,8 +248,8 @@ pub fn process_deposit_and_mint_tokens(
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
-    assert_is_account_initialized(vanilla_token_mint)?;
+    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
+    assert_is_account_initialized(wrapper_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
@@ -257,7 +257,7 @@ pub fn process_deposit_and_mint_tokens(
         *program_id,
         *reserve_token_2022_token_account.key,
     )?;
-    assert_mint_authority(*vanilla_token_mint.key, *program_id, *mint_authority.key)?;
+    assert_mint_authority(*wrapper_token_mint.key, *program_id, *mint_authority.key)?;
 
     assert_token_program(*token_program.key)?;
     assert_token_2022_program(*token_2022_program.key)?;
@@ -268,12 +268,12 @@ pub fn process_deposit_and_mint_tokens(
     let token_2022_mint_data =
         spl_token_2022::state::Mint::unpack(&unwrapped_token_2022_mint_data)?;
 
-    if user_vanilla_token_account.lamports() == 0 {
+    if user_wrapper_token_account.lamports() == 0 {
         let ata_init_ix =
             spl_associated_token_account::instruction::create_associated_token_account(
                 user_authority.key,
-                user_vanilla_token_account.key,
-                vanilla_token_mint.key,
+                user_wrapper_token_account.key,
+                wrapper_token_mint.key,
                 token_program.key,
             );
 
@@ -281,8 +281,8 @@ pub fn process_deposit_and_mint_tokens(
             &ata_init_ix,
             &[
                 user_authority.clone(),
-                user_vanilla_token_account.clone(),
-                vanilla_token_mint.clone(),
+                user_wrapper_token_account.clone(),
+                wrapper_token_mint.clone(),
                 system_program.clone(),
                 token_program.clone(),
             ],
@@ -295,7 +295,7 @@ pub fn process_deposit_and_mint_tokens(
         "User does not own the token account for this Token 2022 token",
     )?;
     assert_with_msg(
-        user_vanilla_token_account.owner == user_authority.key,
+        user_wrapper_token_account.owner == user_authority.key,
         TokenWrapperError::UnexpectedUserTokenAccountOwner,
         "User does not own the token account for this Token 2022 token",
     )?;
@@ -328,12 +328,12 @@ pub fn process_deposit_and_mint_tokens(
     )?;
 
     let (_, _, mint_authority_seeds) =
-        get_token_mint_authority(*vanilla_token_mint.key, *program_id);
+        get_token_mint_authority(*wrapper_token_mint.key, *program_id);
 
     let user_mint_ix = spl_token::instruction::mint_to_checked(
         token_program.key,
-        vanilla_token_mint.key,
-        user_vanilla_token_account.key,
+        wrapper_token_mint.key,
+        user_wrapper_token_account.key,
         user_authority.key,
         &[reserve_authority.key],
         amount,
@@ -344,8 +344,8 @@ pub fn process_deposit_and_mint_tokens(
         &user_mint_ix,
         &[
             token_program.clone(),
-            user_vanilla_token_account.clone(),
-            vanilla_token_mint.clone(),
+            user_wrapper_token_account.clone(),
+            wrapper_token_mint.clone(),
             user_authority.clone(),
         ],
         &[mint_authority_seeds
@@ -358,19 +358,19 @@ pub fn process_deposit_and_mint_tokens(
     Ok(())
 }
 
-pub fn process_withdraw_and_burn_tokens(
+pub fn process_withdraw_and_burn_wrapper_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
 ) -> ProgramResult {
-    msg!("TokenWrapperInstruction::WithdrawAndBurnTokens");
+    msg!("TokenWrapperInstruction::WithdrawAndBurnWrapperTokens");
 
     let accounts_info_iter = &mut accounts.iter();
     let user_authority = next_account_info(accounts_info_iter)?;
     let reserve_authority = next_account_info(accounts_info_iter)?;
     let token_2022_mint = next_account_info(accounts_info_iter)?;
-    let vanilla_token_mint = next_account_info(accounts_info_iter)?;
-    let user_vanilla_token_account = next_account_info(accounts_info_iter)?;
+    let wrapper_token_mint = next_account_info(accounts_info_iter)?;
+    let user_wrapper_token_account = next_account_info(accounts_info_iter)?;
     let user_token_2022_token_account = next_account_info(accounts_info_iter)?;
     let reserve_token_2022_token_account = next_account_info(accounts_info_iter)?;
     let token_program = next_account_info(accounts_info_iter)?;
@@ -380,8 +380,8 @@ pub fn process_withdraw_and_burn_tokens(
 
     // TODO: Validate if the token accounts are associated token accounts
 
-    assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
-    assert_is_account_initialized(vanilla_token_mint)?;
+    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
+    assert_is_account_initialized(wrapper_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
@@ -400,7 +400,7 @@ pub fn process_withdraw_and_burn_tokens(
         spl_token_2022::state::Mint::unpack(&unwrapped_token_2022_mint_data)?;
 
     assert_with_msg(
-        user_vanilla_token_account.lamports() > 0,
+        user_wrapper_token_account.lamports() > 0,
         TokenWrapperError::ExpectedInitializedAccount,
         "The account is not initialized, expected to be initialized",
     )?;
@@ -410,7 +410,7 @@ pub fn process_withdraw_and_burn_tokens(
         "User does not own the token account for this Token 2022 token",
     )?;
     assert_with_msg(
-        user_vanilla_token_account.owner == user_authority.key,
+        user_wrapper_token_account.owner == user_authority.key,
         TokenWrapperError::UnexpectedUserTokenAccountOwner,
         "User does not own the token account for this Token 2022 token",
     )?;
@@ -422,8 +422,8 @@ pub fn process_withdraw_and_burn_tokens(
 
     let user_burn_ix = spl_token::instruction::burn_checked(
         token_program.key,
-        user_vanilla_token_account.key,
-        vanilla_token_mint.key,
+        user_wrapper_token_account.key,
+        wrapper_token_mint.key,
         user_authority.key,
         &[user_authority.key],
         amount,
@@ -434,8 +434,8 @@ pub fn process_withdraw_and_burn_tokens(
         &user_burn_ix,
         &[
             token_program.clone(),
-            user_vanilla_token_account.clone(),
-            vanilla_token_mint.clone(),
+            user_wrapper_token_account.clone(),
+            wrapper_token_mint.clone(),
             user_authority.clone(),
         ],
     )?;

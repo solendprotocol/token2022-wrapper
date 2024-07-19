@@ -1,14 +1,14 @@
 use solana_program::pubkey::Pubkey;
 
-pub fn get_vanilla_token_mint(
+pub fn get_wrapper_token_mint(
     token_2022_mint: Pubkey,
     program_id: Pubkey,
 ) -> (Pubkey, u8, Vec<Vec<u8>>) {
     let (addr, bump) =
-        Pubkey::find_program_address(&[b"vanilla", token_2022_mint.as_ref()], &program_id);
+        Pubkey::find_program_address(&[b"wrapper", token_2022_mint.as_ref()], &program_id);
 
     let seeds = vec![
-        b"vanilla".to_vec(),
+        b"wrapper".to_vec(),
         token_2022_mint.as_ref().to_vec(),
         vec![bump],
     ];

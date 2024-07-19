@@ -4,7 +4,7 @@ use crate::utils::TestClient;
 use solana_program::pubkey::Pubkey;
 use solana_program_test::*;
 use solana_sdk::{native_token::LAMPORTS_PER_SOL, pubkey, signature::Keypair, signer::Signer};
-use token2022_wrapper::{instruction_builders::create_initialize_token_instruction, utils::{get_token_freeze_authority, get_token_mint_authority, get_vanilla_token_mint}};
+use token2022_wrapper::{instruction_builders::create_initialize_wrapper_token_instruction, utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint}};
 use utils::{
     airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, get_token_balance, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions
 };
@@ -70,7 +70,7 @@ pub async fn create_and_mint_tokens_token_2022(
     (token_mint, token_account)
 }
 
-/// Test 1 - testing successful initialization of a vanilla token mint for a Token 2022 mint
+/// Test 1 - testing successful initialization of a wrapper token mint for a Token 2022 mint
 ///
 ///
 #[tokio::test]
@@ -110,7 +110,7 @@ async fn test_1() {
     );
 
     let initialize_ix =
-        create_initialize_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
 
     let _ = match sign_send_instructions(
         &mut test_client,
@@ -121,16 +121,16 @@ async fn test_1() {
     .await
     {
         Ok(_sig) => {
-            let (vanilla_token, _, _) = get_vanilla_token_mint(token_2022_mint, PROGRAM_ID);
-            let (expected_mint_authority, _, _) = get_token_mint_authority(vanilla_token, PROGRAM_ID);
-            let (expected_freeze_authority, _, _) = get_token_freeze_authority(vanilla_token, PROGRAM_ID);
+            let (wrapper_token, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+            let (expected_mint_authority, _, _) = get_token_mint_authority(wrapper_token, PROGRAM_ID);
+            let (expected_freeze_authority, _, _) = get_token_freeze_authority(wrapper_token, PROGRAM_ID);
 
-            let vanilla_token_ac = get_token_mint(&mut test_client, &vanilla_token).await.unwrap();
+            let wrapper_token_ac = get_token_mint(&mut test_client, &wrapper_token).await.unwrap();
             
-            assert_with_msg(expected_mint_authority == vanilla_token_ac.mint_authority.unwrap(), "Mint authority for the vanilla token does not match");
-            assert_with_msg(expected_freeze_authority == vanilla_token_ac.freeze_authority.unwrap(), "Freeze authority for the vanilla token does not match");
-            assert_with_msg(vanilla_token_ac.decimals == decimal_2022, "Decimals for the vanilla token does not match");
-            assert_with_msg(vanilla_token_ac.supply == 0, "Invalid initial supply for the vanilla token");
+            assert_with_msg(expected_mint_authority == wrapper_token_ac.mint_authority.unwrap(), "Mint authority for the wrapper token does not match");
+            assert_with_msg(expected_freeze_authority == wrapper_token_ac.freeze_authority.unwrap(), "Freeze authority for the wrapper token does not match");
+            assert_with_msg(wrapper_token_ac.decimals == decimal_2022, "Decimals for the wrapper token does not match");
+            assert_with_msg(wrapper_token_ac.supply == 0, "Invalid initial supply for the wrapper token");
         }
         Err(e) => {
             println!("Error: {}", e);

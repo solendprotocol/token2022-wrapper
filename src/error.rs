@@ -6,9 +6,9 @@ use thiserror::Error;
 #[repr(u32)]
 
 pub enum TokenWrapperError {
-    #[error("Unexpected vanilla token mint")]
-    UnexpectedVanillaToken = 0,
-    #[error("Unexpected Token Program")]
+    #[error("Unexpected wrapper token mint")]
+    UnexpectedWrapperToken = 0,
+    #[error("Unexpected SPL Token Program")]
     UnexpectedTokenProgram = 1,
     #[error("Unexpected Token 2022 Program")]
     UnexpectedToken2022Program = 2,
