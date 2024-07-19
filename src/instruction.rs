@@ -1,5 +1,5 @@
-use solana_program::{msg, program_error::ProgramError};
 use num_enum::TryFromPrimitive;
+use solana_program::{msg, program_error::ProgramError};
 
 #[repr(u8)]
 #[derive(TryFromPrimitive, Clone, Copy, PartialEq, Eq)]
@@ -92,7 +92,7 @@ impl TokenWrapperInstruction {
             .ok_or(ProgramError::InvalidInstructionData)?;
         Ok((value, rest))
     }
-    
+
     pub fn to_vec(&self) -> Vec<u8> {
         vec![*self as u8]
     }

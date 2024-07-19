@@ -1,19 +1,30 @@
-use solana_program::{
-    account_info::{next_account_info, AccountInfo}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey
-};
-use solana_program::instruction::{Instruction, AccountMeta};
+use solana_program::instruction::{AccountMeta, Instruction};
+use solana_program::rent::Rent;
 use solana_program::system_instruction::SystemInstruction;
+use solana_program::{
+    account_info::{next_account_info, AccountInfo},
+    entrypoint::ProgramResult,
+    msg,
+    program::{invoke, invoke_signed},
+    program_error::ProgramError,
+    program_pack::Pack,
+    pubkey::Pubkey,
+};
 use solana_sdk::sysvar::Sysvar;
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
-use solana_program::rent::Rent;
 use spl_token_2022::extension::ExtensionType;
 
 use crate::{
     error::TokenWrapperError,
     instruction::TokenWrapperInstruction,
     utils::{
-        assert_is_account_initialized, assert_is_account_uninitialized, assert_mint_authority, assert_rent, assert_reserve_authority, assert_reserve_authority_token_account, assert_system_program, assert_token_2022_program, assert_token_program, assert_vanilla_token_mint, assert_with_msg, get_reserve_authority, get_reserve_authority_token_account, get_token_freeze_authority, get_token_mint_authority, get_vanilla_token_mint
+        assert_is_account_initialized, assert_is_account_uninitialized, assert_mint_authority,
+        assert_rent, assert_reserve_authority, assert_reserve_authority_token_account,
+        assert_system_program, assert_token_2022_program, assert_token_program,
+        assert_vanilla_token_mint, assert_with_msg, get_reserve_authority,
+        get_reserve_authority_token_account, get_token_freeze_authority, get_token_mint_authority,
+        get_vanilla_token_mint,
     },
 };
 
@@ -25,8 +36,8 @@ pub fn process_instruction(
     let instruction = TokenWrapperInstruction::unpack(instruction_data)?;
 
     let (_, data) = instruction_data
-            .split_first()
-            .ok_or(ProgramError::InvalidInstructionData)?;
+        .split_first()
+        .ok_or(ProgramError::InvalidInstructionData)?;
 
     match instruction {
         TokenWrapperInstruction::InitializeToken => process_initialize_token(program_id, accounts),
@@ -43,10 +54,7 @@ pub fn process_instruction(
     }
 }
 
-pub fn process_initialize_token(
-    program_id: &Pubkey,
-    accounts: &[AccountInfo]
-) -> ProgramResult {
+pub fn process_initialize_token(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     msg!("TokenWrapperInstruction::InitializeToken");
 
     let accounts_info_iter = &mut accounts.iter();
@@ -69,7 +77,12 @@ pub fn process_initialize_token(
 
     assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
-    assert_reserve_authority_token_account(*token_2022_mint.key, *reserve_authority.key, *program_id, *reserve_token_2022_token_account.key)?;
+    assert_reserve_authority_token_account(
+        *token_2022_mint.key,
+        *reserve_authority.key,
+        *program_id,
+        *reserve_token_2022_token_account.key,
+    )?;
     assert_is_account_uninitialized(vanilla_token_mint)?;
     assert_is_account_uninitialized(reserve_authority)?;
     assert_is_account_uninitialized(reserve_token_2022_token_account)?;
@@ -79,18 +92,21 @@ pub fn process_initialize_token(
     assert_rent(*rent_sysvar.key)?;
 
     let (_, _, vanilla_token_mint_seeds) =
-    get_vanilla_token_mint(*token_2022_mint.key, *program_id);
+        get_vanilla_token_mint(*token_2022_mint.key, *program_id);
 
     let (_, _, reserve_authority_seeds) = get_reserve_authority(*token_2022_mint.key, *program_id);
 
-    let (_, _, reserve_token_account_seeds) = get_reserve_authority_token_account(*token_2022_mint.key, *reserve_authority.key, *program_id);
+    let (_, _, reserve_token_account_seeds) = get_reserve_authority_token_account(
+        *token_2022_mint.key,
+        *reserve_authority.key,
+        *program_id,
+    );
 
     let mint_data_length = Mint::LEN as u64;
     let rent = Rent::get().unwrap();
     let mint_lamports = rent.minimum_balance(mint_data_length as usize);
 
-    let create_mint_account_ix = 
-    Instruction::new_with_bincode(
+    let create_mint_account_ix = Instruction::new_with_bincode(
         *system_program.key,
         &SystemInstruction::CreateAccount {
             lamports: mint_lamports,
@@ -108,14 +124,13 @@ pub fn process_initialize_token(
         &[
             payer.clone(),
             vanilla_token_mint.clone(),
-            system_program.clone()
+            system_program.clone(),
         ],
         &[vanilla_token_mint_seeds
             .iter()
             .map(|seed| seed.as_slice())
             .collect::<Vec<&[u8]>>()
-            .as_slice()
-        ],
+            .as_slice()],
     )?;
 
     let init_mint_ix = spl_token::instruction::initialize_mint(
@@ -149,8 +164,7 @@ pub fn process_initialize_token(
     let rent = Rent::get().unwrap();
     let token_account_lamports = rent.minimum_balance(token_account_data_length as usize);
 
-    let create_reserve_token_account_ix = 
-    Instruction::new_with_bincode(
+    let create_reserve_token_account_ix = Instruction::new_with_bincode(
         *system_program.key,
         &SystemInstruction::CreateAccount {
             lamports: token_account_lamports,
@@ -168,14 +182,13 @@ pub fn process_initialize_token(
         &[
             payer.clone(),
             reserve_token_2022_token_account.clone(),
-            system_program.clone()
+            system_program.clone(),
         ],
         &[reserve_token_account_seeds
             .iter()
             .map(|seed| seed.as_slice())
             .collect::<Vec<&[u8]>>()
-            .as_slice()
-        ],
+            .as_slice()],
     )?;
 
     invoke(
@@ -206,8 +219,7 @@ pub fn process_initialize_token(
             .iter()
             .map(|seed| seed.as_slice())
             .collect::<Vec<&[u8]>>()
-            .as_slice()
-        ],
+            .as_slice()],
     )?;
 
     msg!("Everything done, returning");
@@ -239,7 +251,12 @@ pub fn process_deposit_and_mint_tokens(
     assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
     assert_is_account_initialized(vanilla_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
-    assert_reserve_authority_token_account(*token_2022_mint.key, *reserve_authority.key, *program_id, *reserve_token_2022_token_account.key)?;
+    assert_reserve_authority_token_account(
+        *token_2022_mint.key,
+        *reserve_authority.key,
+        *program_id,
+        *reserve_token_2022_token_account.key,
+    )?;
     assert_mint_authority(*vanilla_token_mint.key, *program_id, *mint_authority.key)?;
 
     assert_token_program(*token_program.key)?;
@@ -366,7 +383,12 @@ pub fn process_withdraw_and_burn_tokens(
     assert_vanilla_token_mint(*token_2022_mint.key, *program_id, *vanilla_token_mint.key)?;
     assert_is_account_initialized(vanilla_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
-    assert_reserve_authority_token_account(*token_2022_mint.key, *reserve_authority.key, *program_id, *reserve_token_2022_token_account.key)?;
+    assert_reserve_authority_token_account(
+        *token_2022_mint.key,
+        *reserve_authority.key,
+        *program_id,
+        *reserve_token_2022_token_account.key,
+    )?;
 
     assert_token_program(*token_program.key)?;
     assert_token_2022_program(*token_2022_program.key)?;

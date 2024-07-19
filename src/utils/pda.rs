@@ -40,7 +40,11 @@ pub fn get_reserve_authority_token_account(
     program_id: Pubkey,
 ) -> (Pubkey, u8, Vec<Vec<u8>>) {
     let (addr, bump) = Pubkey::find_program_address(
-        &[b"reserve_authority_token_account", token_2022_mint.as_ref(), owner.as_ref()],
+        &[
+            b"reserve_authority_token_account",
+            token_2022_mint.as_ref(),
+            owner.as_ref(),
+        ],
         &program_id,
     );
 
