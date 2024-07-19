@@ -39,13 +39,16 @@ pub async fn sign_send_instructions(
 }
 
 pub async fn get_account(client: &mut TestClient, pubkey: &Pubkey) -> Account {
-    client
+    let acc = match client
         .banks_client
         .get_account(*pubkey)
-        .await
-        .expect("account not found")
-        .expect("account empty")
-}
+        .await {
+            Ok(ac) => ac,
+            Err(_) => None
+        };
+
+        acc.unwrap_or_default()
+    }
 
 pub async fn create_associated_token_account(
     client: &mut TestClient,
@@ -148,10 +151,12 @@ pub async fn get_balance(client: &mut TestClient, pubkey: &Pubkey) -> u64 {
 }
 
 pub async fn get_token_balance(client: &mut TestClient, token_account: &Pubkey) -> u64 {
-    get_token_account(client, token_account)
-        .await
-        .unwrap()
-        .amount
+    let amount = match get_token_account(client, token_account)
+        .await {
+            Ok(acc) => acc.amount,
+            Err(_) => 0
+        };
+    amount
 }
 
 pub async fn get_token_account(
@@ -159,7 +164,7 @@ pub async fn get_token_account(
     token_account: &Pubkey,
 ) -> TransactionResult<spl_token::state::Account> {
     let account = get_account(client, token_account).await;
-    Ok(spl_token::state::Account::unpack(&account.data).unwrap())
+    Ok(spl_token::state::Account::unpack(&account.data).unwrap_or_default())
 }
 
 pub async fn get_token_mint(

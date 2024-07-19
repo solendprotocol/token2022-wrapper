@@ -41,6 +41,7 @@ pub enum TokenWrapperInstruction {
     /// 8. `[]` SPL Token program
     /// 9. `[]` Token2022 program
     /// 10. `[]` System program
+    /// 11. `[]` Associated token program
     /// 11. `[]` Rent sysvar
     DepositAndMintWrapperTokens = 1,
 
