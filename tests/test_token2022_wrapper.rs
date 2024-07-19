@@ -130,7 +130,7 @@ async fn test_1() {
     };
 }
 
-/// cannot initialize on repeated tokens
+/// Test 2 - cannot initialize on repeated tokens
 /// 
 /// 
 #[tokio::test]
@@ -200,38 +200,87 @@ async fn test_2() {
     };
 }
 
-// cannot initialize for an spl token
+/// Test 3 - cannot initialize for an spl token
+/// 
+/// 
+#[tokio::test]
+async fn test_3() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
 
-// mint test tokens with decimal 5
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
 
-// mint test tokens with decimal 8
+    let decimal = 9_u8;
+    let amount = 10_000_u64 * 10_u64.pow(decimal as u32);
 
-// mint test tokens with decimal 1
+    let (token_mint, _) = create_and_mint_tokens(
+        &mut test_client,
+        &user.pubkey(),
+        amount,
+        decimal,
+    )
+    .await;
 
-// mint test tokens with decimal 0
+    let token_data = get_token_mint(&mut test_client, &token_mint)
+        .await
+        .unwrap();
 
-// works if user A mints, sends it to user B and user B withdraws
+    assert_with_msg(
+        token_data.decimals == decimal,
+        "Invalid token decimals",
+    );
 
-// cannot mint if not owned
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_mint);
 
-// cannot mint with an invalid token deposit
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            panic!("Expected test_3 to fail, but succeeded");
+        }
+        Err(e) => {
+            assert_with_msg(e.to_string().contains("incorrect program id"), "Expected test_3 to fail with incorrect program id");
+        }
+    };
+}
 
-// cannot mint if tokens are frozen
+// Test 4 - mint test tokens with decimal 5
 
-// cannot mint if max supply is reached
+// Test 5 - mint test tokens with decimal 8
 
-// burn test tokens with decimal 5
+// Test 6 - mint test tokens with decimal 1
 
-// burn test tokens with decimal 8
+// Test 7 - mint test tokens with decimal 0
 
-// burn test tokens with decimal 1
+// Test 8 - works if user A mints, sends it to user B and user B withdraws
 
-// burn test tokens with decimal 0
+// Test 9 - cannot mint if not owned
 
-// cannot burn if not owned
+// Test 10 - cannot mint with an invalid token deposit
 
-// cannot burn an invalid token22 deposit
+// Test 11 - cannot mint if tokens are frozen
 
-// cannot burn if tokens are frozen
+// Test 12 - cannot mint if max supply is reached
 
-// cannot burn if max supply is reached
+// Test 13 - burn test tokens with decimal 5
+
+// Test 14 - burn test tokens with decimal 8
+
+// Test 15 - burn test tokens with decimal 1
+
+// Test 16 - burn test tokens with decimal 0
+
+// Test 17 - cannot burn if not owned
+
+// Test 18 - cannot burn an invalid token22 deposit
+
+// Test 19 - cannot burn if tokens are frozen
+
+// Test 20 - cannot burn if max supply is reached
