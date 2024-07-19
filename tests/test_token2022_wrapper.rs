@@ -1,5 +1,7 @@
 pub mod utils;
 
+use std::time::Duration;
+
 use crate::utils::TestClient;
 use solana_program::pubkey::Pubkey;
 use solana_program_test::*;
@@ -7,7 +9,7 @@ use solana_sdk::{native_token::LAMPORTS_PER_SOL, pubkey, signature::Keypair, sig
 use spl_associated_token_account::get_associated_token_address;
 use token2022_wrapper::{error::TokenWrapperError, instruction_builders::{create_deposit_and_mint_wrapper_tokens_instruction, create_initialize_wrapper_token_instruction}, utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint}};
 use utils::{
-    airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, extract_error_code, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions
+    airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, extract_error_code, get_token_balance, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions
 };
 
 pub const PROGRAM_ID: Pubkey = pubkey!("6E9iP7p4Gx2e6c2Yt4MHY5T1aZ8RWhrmF9p6bXkGWiza");
@@ -263,8 +265,9 @@ async fn test_4() {
     let user = Keypair::new();
     let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
 
-    let decimal_2022 = 9_u8;
+    let decimal_2022 = 5_u8;
     let amount_2022 = 10_000_u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = amount_2022 / 2;
 
     let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
         &mut test_client,
@@ -273,6 +276,12 @@ async fn test_4() {
         decimal_2022,
     )
     .await;
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
     let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
         .await
@@ -295,14 +304,12 @@ async fn test_4() {
     .await
     {
         Ok(_sig) => {
-            let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
-
             let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                 &user.pubkey(), 
                 &token_2022_mint, 
-                &get_associated_token_address(&user.pubkey(), &wrapper_token_mint), 
+                &user_wrapper_token_account,
                 &user_token_2022_token_account,
-                amount_2022 / 2
+                amount_wrapper
             );
 
             let _ = match sign_send_instructions(
@@ -311,8 +318,14 @@ async fn test_4() {
                 vec![&user, &payer_keypair], 
                 None
             ).await {
-                Ok(sig) => {
-                    println!("Deposit tx successful: {:?}", sig);
+                Ok(_sig) => {
+                    tokio::time::sleep(Duration::from_millis(1_000)).await;
+
+                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+
+                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
+                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
                 },
                 Err(e) => {
                     println!("Error deposit tx: {}", e);
@@ -325,34 +338,280 @@ async fn test_4() {
     };
 }
 
-// Test 5 - mint test tokens with decimal 8
+/// Test 5 - mint test tokens with decimal 8
+/// 
+///
+#[tokio::test]
+async fn test_5() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
 
-// Test 6 - mint test tokens with decimal 1
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
 
-// Test 7 - mint test tokens with decimal 0
+    let decimal_2022 = 8_u8;
+    let amount_2022 = 10_000_u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = amount_2022 / 2;
 
-// Test 8 - works if user A mints, sends it to user B and user B withdraws
+    let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
-// Test 9 - cannot mint if not owned
+    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
 
-// Test 10 - cannot mint with an invalid token deposit
+    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
-// Test 11 - cannot mint if tokens are frozen
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
 
-// Test 12 - cannot mint if max supply is reached
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
 
-// Test 13 - burn test tokens with decimal 5
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
 
-// Test 14 - burn test tokens with decimal 8
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                &user.pubkey(), 
+                &token_2022_mint, 
+                &user_wrapper_token_account,
+                &user_token_2022_token_account,
+                amount_wrapper
+            );
 
-// Test 15 - burn test tokens with decimal 1
+            let _ = match sign_send_instructions(
+                &mut test_client, 
+                &vec![deposit_ix], 
+                vec![&user, &payer_keypair], 
+                None
+            ).await {
+                Ok(_sig) => {
+                    tokio::time::sleep(Duration::from_millis(1_000)).await;
 
-// Test 16 - burn test tokens with decimal 0
+                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
 
-// Test 17 - cannot burn if not owned
+                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
+                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
+                },
+                Err(e) => {
+                    println!("Error deposit tx: {}", e);
+                }
+            };
+        }
+        Err(e) => {
+            println!("Error initializing token mint: {}", e);
+        }
+    };
+}
 
-// Test 18 - cannot burn an invalid token22 deposit
+/// Test 6 - mint test tokens with decimal 1
+/// 
+/// 
+#[tokio::test]
+async fn test_6() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
 
-// Test 19 - cannot burn if tokens are frozen
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
 
-// Test 20 - cannot burn if max supply is reached
+    let decimal_2022 = 1_u8;
+    let amount_2022 = 10_000_u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = amount_2022 / 2;
+
+    let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
+
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
+
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                &user.pubkey(), 
+                &token_2022_mint, 
+                &user_wrapper_token_account,
+                &user_token_2022_token_account,
+                amount_wrapper
+            );
+
+            let _ = match sign_send_instructions(
+                &mut test_client, 
+                &vec![deposit_ix], 
+                vec![&user, &payer_keypair], 
+                None
+            ).await {
+                Ok(_sig) => {
+                    tokio::time::sleep(Duration::from_millis(1_000)).await;
+
+                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+
+                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
+                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
+                },
+                Err(e) => {
+                    println!("Error deposit tx: {}", e);
+                }
+            };
+        }
+        Err(e) => {
+            println!("Error initializing token mint: {}", e);
+        }
+    };
+}
+
+/// Test 7 - mint test tokens with decimal 0
+/// 
+/// 
+#[tokio::test]
+async fn test_7() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
+
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+
+    let decimal_2022 = 0_u8;
+    let amount_2022 = 10_000_u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = amount_2022 / 2;
+
+    let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
+
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
+
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                &user.pubkey(), 
+                &token_2022_mint, 
+                &user_wrapper_token_account,
+                &user_token_2022_token_account,
+                amount_wrapper
+            );
+
+            let _ = match sign_send_instructions(
+                &mut test_client, 
+                &vec![deposit_ix], 
+                vec![&user, &payer_keypair], 
+                None
+            ).await {
+                Ok(_sig) => {
+                    tokio::time::sleep(Duration::from_millis(1_000)).await;
+
+                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+
+                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
+                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
+                },
+                Err(e) => {
+                    println!("Error deposit tx: {}", e);
+                }
+            };
+        }
+        Err(e) => {
+            println!("Error initializing token mint: {}", e);
+        }
+    };
+}
+
+// Test 8 - cannot mint if not owned
+
+// Test 9 - cannot mint with an invalid token deposit
+
+// Test 10 - cannot mint if tokens are frozen
+
+// Test 11 - cannot mint if max supply is reached
+
+// Test 12 - burn test tokens with decimal 5
+
+// Test 13 - burn test tokens with decimal 8
+
+// Test 14 - burn test tokens with decimal 1
+
+// Test 15 - burn test tokens with decimal 0
+
+// Test 16 - cannot burn if not owned
+
+// Test 17 - cannot burn an invalid token22 deposit
+
+// Test 18 - cannot burn if tokens are frozen
+
+// Test 19 - cannot burn if max supply is reached
+
+// Test 20 - works if user A mints, sends it to user B and user B withdraws
