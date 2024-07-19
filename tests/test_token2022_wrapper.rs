@@ -4,7 +4,7 @@ use solana_program_test::*;
 use solana_program::pubkey::Pubkey;
 use solana_sdk::{native_token::LAMPORTS_PER_SOL, signature::Keypair, signer::Signer};
 use token2022_wrapper::instruction_builders::create_initialize_token_instruction;
-use utils::{airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, get_token_account, get_token_balance, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions};
+use utils::{airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, get_token_balance, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions};
 use crate::utils::TestClient;
 
 pub async fn create_and_mint_tokens(

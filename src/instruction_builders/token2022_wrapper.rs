@@ -3,9 +3,8 @@ use solana_program::{
     pubkey::Pubkey,
     system_program, sysvar,
 };
-use spl_associated_token_account::get_associated_token_address;
 
-use crate::{instruction::TokenWrapperInstruction, utils::{get_reserve_authority, get_token_mint_authority, get_vanilla_token_mint}};
+use crate::{instruction::TokenWrapperInstruction, utils::{get_reserve_authority, get_reserve_authority_token_account, get_token_mint_authority, get_vanilla_token_mint}};
 
 
 pub fn create_initialize_token_instruction(
@@ -14,7 +13,7 @@ pub fn create_initialize_token_instruction(
 ) -> Instruction {
     let (vanilla_token_mint, _, _) = get_vanilla_token_mint(*token_2022_mint, crate::id());
     let (reserve_authority, _, _) = get_reserve_authority(*token_2022_mint, crate::id());
-    let reserve_token_2022_token_account = get_associated_token_address(&reserve_authority, &token_2022_mint);
+    let (reserve_token_2022_token_account, _, _) = get_reserve_authority_token_account(*token_2022_mint, reserve_authority, crate::id());
 
     Instruction {
         program_id: crate::id(),
@@ -25,6 +24,7 @@ pub fn create_initialize_token_instruction(
             AccountMeta::new(reserve_authority, false),
             AccountMeta::new(reserve_token_2022_token_account, false),
             AccountMeta::new_readonly(spl_token::id(), false),
+            AccountMeta::new_readonly(spl_token_2022::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
             AccountMeta::new_readonly(sysvar::rent::id(), false),
         ],
@@ -43,7 +43,7 @@ pub fn create_deposit_and_mint_instruction(
     let (reserve_authority, _, _) = get_reserve_authority(*token_2022_mint, crate::id());
     let (mint_authority, _, _) = get_token_mint_authority(vanilla_token_mint, crate::id());
 
-    let reserve_token_2022_token_account = get_associated_token_address(&reserve_authority, &token_2022_mint);
+    let (reserve_token_2022_token_account, _, _) = get_reserve_authority_token_account(*token_2022_mint, reserve_authority, crate::id());
 
     Instruction {
         program_id: crate::id(),
@@ -58,8 +58,8 @@ pub fn create_deposit_and_mint_instruction(
             AccountMeta::new(reserve_token_2022_token_account, false),
             AccountMeta::new_readonly(spl_token::id(), false),
             AccountMeta::new_readonly(spl_token_2022::id(), false),
-            AccountMeta::new_readonly(spl_associated_token_account::id(), false),
-            AccountMeta::new_readonly(system_program::id(), false)
+            AccountMeta::new_readonly(system_program::id(), false),
+            AccountMeta::new_readonly(sysvar::rent::id(), false)
         ],
         data: [
             TokenWrapperInstruction::DepositAndMintTokens.to_vec(),
@@ -79,7 +79,7 @@ pub fn create_withdraw_and_burn_instruction(
     let (reserve_authority, _, _) = get_reserve_authority(*token_2022_mint, crate::id());
     let (mint_authority, _, _) = get_token_mint_authority(vanilla_token_mint, crate::id());
 
-    let reserve_token_2022_token_account = get_associated_token_address(&reserve_authority, &token_2022_mint);
+    let (reserve_token_2022_token_account, _, _) = get_reserve_authority_token_account(*token_2022_mint, reserve_authority, crate::id());
 
     Instruction {
         program_id: crate::id(),
@@ -94,8 +94,8 @@ pub fn create_withdraw_and_burn_instruction(
             AccountMeta::new(reserve_token_2022_token_account, false),
             AccountMeta::new_readonly(spl_token::id(), false),
             AccountMeta::new_readonly(spl_token_2022::id(), false),
-            AccountMeta::new_readonly(spl_associated_token_account::id(), false),
-            AccountMeta::new_readonly(system_program::id(), false)
+            AccountMeta::new_readonly(system_program::id(), false),
+            AccountMeta::new_readonly(sysvar::rent::id(), false)
         ],
         data: [
             TokenWrapperInstruction::DepositAndMintTokens.to_vec(),

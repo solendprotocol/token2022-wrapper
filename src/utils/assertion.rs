@@ -6,8 +6,7 @@ use solana_program::{
 use crate::error::TokenWrapperError;
 
 use super::{
-    get_reserve_authority, get_token_freeze_authority, get_token_mint_authority,
-    get_vanilla_token_mint,
+    get_reserve_authority, get_reserve_authority_token_account, get_token_freeze_authority, get_token_mint_authority, get_vanilla_token_mint
 };
 
 #[track_caller]
@@ -87,6 +86,21 @@ pub fn assert_reserve_authority(
         expected_reserve_authority == actual_reserve_authority,
         TokenWrapperError::UnexpectedReserveAuthority,
         "Invalid reserve authority passed",
+    )
+}
+
+pub fn assert_reserve_authority_token_account(
+    token_2022_mint: Pubkey,
+    owner: Pubkey,
+    program_id: Pubkey,
+    actual_reserve_authority_token_account: Pubkey,
+) -> ProgramResult {
+    let (expected_reserve_authority_token_account, _, _) = get_reserve_authority_token_account(token_2022_mint, owner, program_id);
+
+    assert_with_msg(
+        expected_reserve_authority_token_account == actual_reserve_authority_token_account,
+        TokenWrapperError::UnexpectedReserveTokenAccount,
+        "Invalid reserve authority token account passed",
     )
 }
 

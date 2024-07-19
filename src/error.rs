@@ -24,12 +24,14 @@ pub enum TokenWrapperError {
     UnexpectedUserTokenAccountOwner = 7,
     #[error("Unexpected reserve token account owner")]
     UnexpectedReserveTokenAccountOwner = 8,
+    #[error("Unexpected reserve token account")]
+    UnexpectedReserveTokenAccount = 9,
     #[error("Unexpected reserve authority")]
-    UnexpectedReserveAuthority = 9,
+    UnexpectedReserveAuthority = 10,
     #[error("Unexpected mint authority")]
-    UnexpectedMintAuthority = 10,
+    UnexpectedMintAuthority = 11,
     #[error("Unexpected freeze authority")]
-    UnexpectedFreezeAuthority = 11,
+    UnexpectedFreezeAuthority = 12,
 }
 
 impl From<TokenWrapperError> for ProgramError {

@@ -15,10 +15,12 @@ pub enum TokenWrapperInstruction {
     ///     Must be a PDA with seeds ["vanilla", Token2022 token mint]
     /// 3. `[writable]` Reserve authority, uninitialized
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
-    /// 4. `[writable]` The associated token account of the reserve authority for the vanilla token mint, uninitialized
+    /// 4. `[writable]` Reserve authority token account, uninitialized
+    ///     Must be a PDA with seeds ["reserve_authority_token_account", Token2022 token mint, reserve_authority PDA pubkey]
     /// 3. `[]` Vanilla Token program
-    /// 4. `[]` System program
-    /// 5. `[]` Rent sysvar
+    /// 4. `[]` Token 2022 program
+    /// 5. `[]` System program
+    /// 6. `[]` Rent sysvar
     InitializeToken = 0,
 
     /// 1
@@ -30,6 +32,7 @@ pub enum TokenWrapperInstruction {
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Mint authority for the vanilla token
+    ///     Must be a PDA with seeds ["min_authority", Token2022 token mint]
     /// 3. `[]` Token2022 token mint
     /// 4. `[]` Vanilla token mint
     /// 5. `[writable]` User's token account for the vanilla token
@@ -37,8 +40,8 @@ pub enum TokenWrapperInstruction {
     /// 7. `[writable]` Reserve's token account for the Token2022 token
     /// 8. `[]` Vanilla Token program
     /// 9. `[]` Token2022 program
-    /// 10. `[]` Associated token program
-    /// 11. `[]` System program
+    /// 10. `[]` System program
+    /// 11. `[]` Rent sysvar
     DepositAndMintTokens = 1,
 
     /// 2
@@ -56,8 +59,8 @@ pub enum TokenWrapperInstruction {
     /// 6. `[writable]` Reserve's token account for the Token2022 token
     /// 7. `[]` Vanilla Token program
     /// 8. `[]` Token2022 program
-    /// 9. `[]` Associated token program
-    /// 10. `[]` System program
+    /// 9. `[]` System program
+    /// 10. `[]` Rent sysvar
     WithdrawAndBurnTokens = 2,
 }
 
