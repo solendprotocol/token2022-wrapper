@@ -39,16 +39,13 @@ pub async fn sign_send_instructions(
 }
 
 pub async fn get_account(client: &mut TestClient, pubkey: &Pubkey) -> Account {
-    let acc = match client
-        .banks_client
-        .get_account(*pubkey)
-        .await {
-            Ok(ac) => ac,
-            Err(_) => None
-        };
+    let acc = match client.banks_client.get_account(*pubkey).await {
+        Ok(ac) => ac,
+        Err(_) => None,
+    };
 
-        acc.unwrap_or_default()
-    }
+    acc.unwrap_or_default()
+}
 
 pub async fn create_associated_token_account(
     client: &mut TestClient,
@@ -151,11 +148,10 @@ pub async fn get_balance(client: &mut TestClient, pubkey: &Pubkey) -> u64 {
 }
 
 pub async fn get_token_balance(client: &mut TestClient, token_account: &Pubkey) -> u64 {
-    let amount = match get_token_account(client, token_account)
-        .await {
-            Ok(acc) => acc.amount,
-            Err(_) => 0
-        };
+    let amount = match get_token_account(client, token_account).await {
+        Ok(acc) => acc.amount,
+        Err(_) => 0,
+    };
     amount
 }
 
@@ -380,7 +376,9 @@ pub async fn mint_token_2022_tokens(
     };
 
     if decimals == std::u8::MAX {
-        return Err(solana_program_test::BanksClientError::Io(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid decimals")));
+        return Err(solana_program_test::BanksClientError::Io(
+            std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid decimals"),
+        ));
     }
 
     let ix = spl_token_2022::instruction::mint_to_checked(

@@ -7,9 +7,18 @@ use solana_program::pubkey::Pubkey;
 use solana_program_test::*;
 use solana_sdk::{native_token::LAMPORTS_PER_SOL, pubkey, signature::Keypair, signer::Signer};
 use spl_associated_token_account::get_associated_token_address;
-use token2022_wrapper::{error::TokenWrapperError, instruction_builders::{create_deposit_and_mint_wrapper_tokens_instruction, create_initialize_wrapper_token_instruction}, utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint}};
+use token2022_wrapper::{
+    error::TokenWrapperError,
+    instruction_builders::{
+        create_deposit_and_mint_wrapper_tokens_instruction,
+        create_initialize_wrapper_token_instruction,
+    },
+    utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint},
+};
 use utils::{
-    airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, extract_error_code, get_token_balance, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions
+    airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint,
+    create_token_account_token_2022, extract_error_code, get_token_balance, get_token_mint,
+    mint_token_2022_tokens, mint_tokens, sign_send_instructions,
 };
 
 pub const PROGRAM_ID: Pubkey = pubkey!("6E9iP7p4Gx2e6c2Yt4MHY5T1aZ8RWhrmF9p6bXkGWiza");
@@ -117,15 +126,31 @@ async fn test_1() {
     {
         Ok(_sig) => {
             let (wrapper_token, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
-            let (expected_mint_authority, _, _) = get_token_mint_authority(wrapper_token, PROGRAM_ID);
-            let (expected_freeze_authority, _, _) = get_token_freeze_authority(wrapper_token, PROGRAM_ID);
+            let (expected_mint_authority, _, _) =
+                get_token_mint_authority(wrapper_token, PROGRAM_ID);
+            let (expected_freeze_authority, _, _) =
+                get_token_freeze_authority(wrapper_token, PROGRAM_ID);
 
-            let wrapper_token_ac = get_token_mint(&mut test_client, &wrapper_token).await.unwrap();
-            
-            assert_with_msg(expected_mint_authority == wrapper_token_ac.mint_authority.unwrap(), "Mint authority for the wrapper token does not match");
-            assert_with_msg(expected_freeze_authority == wrapper_token_ac.freeze_authority.unwrap(), "Freeze authority for the wrapper token does not match");
-            assert_with_msg(wrapper_token_ac.decimals == decimal_2022, "Decimals for the wrapper token does not match");
-            assert_with_msg(wrapper_token_ac.supply == 0, "Invalid initial supply for the wrapper token");
+            let wrapper_token_ac = get_token_mint(&mut test_client, &wrapper_token)
+                .await
+                .unwrap();
+
+            assert_with_msg(
+                expected_mint_authority == wrapper_token_ac.mint_authority.unwrap(),
+                "Mint authority for the wrapper token does not match",
+            );
+            assert_with_msg(
+                expected_freeze_authority == wrapper_token_ac.freeze_authority.unwrap(),
+                "Freeze authority for the wrapper token does not match",
+            );
+            assert_with_msg(
+                wrapper_token_ac.decimals == decimal_2022,
+                "Decimals for the wrapper token does not match",
+            );
+            assert_with_msg(
+                wrapper_token_ac.supply == 0,
+                "Invalid initial supply for the wrapper token",
+            );
         }
         Err(e) => {
             println!("Error: {}", e);
@@ -134,8 +159,8 @@ async fn test_1() {
 }
 
 /// Test 2 - cannot initialize on repeated tokens
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_2() {
     let mut test_client = TestClient::new().await;
@@ -166,10 +191,9 @@ async fn test_2() {
 
     let initialize_ix =
         create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
-        
+
     let duplicate_initialize_ix =
         create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
-
 
     let _ = sign_send_instructions(
         &mut test_client,
@@ -193,8 +217,11 @@ async fn test_2() {
         Err(e) => {
             let _ = match extract_error_code(e.to_string().as_str()) {
                 Some(error_code) => {
-                    assert_with_msg(error_code == TokenWrapperError::UnexpectedInitializedAccount as u32, format!("Invalid error thrown for test_2: {}", e).as_str());
-                },
+                    assert_with_msg(
+                        error_code == TokenWrapperError::UnexpectedInitializedAccount as u32,
+                        format!("Invalid error thrown for test_2: {}", e).as_str(),
+                    );
+                }
                 None => {
                     println!("Could not parse error code from the BanksClientError");
                 }
@@ -204,8 +231,8 @@ async fn test_2() {
 }
 
 /// Test 3 - cannot initialize for an spl token
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_3() {
     let mut test_client = TestClient::new().await;
@@ -217,22 +244,12 @@ async fn test_3() {
     let decimal = 9_u8;
     let amount = 10_000_u64 * 10_u64.pow(decimal as u32);
 
-    let (token_mint, _) = create_and_mint_tokens(
-        &mut test_client,
-        &user.pubkey(),
-        amount,
-        decimal,
-    )
-    .await;
+    let (token_mint, _) =
+        create_and_mint_tokens(&mut test_client, &user.pubkey(), amount, decimal).await;
 
-    let token_data = get_token_mint(&mut test_client, &token_mint)
-        .await
-        .unwrap();
+    let token_data = get_token_mint(&mut test_client, &token_mint).await.unwrap();
 
-    assert_with_msg(
-        token_data.decimals == decimal,
-        "Invalid token decimals",
-    );
+    assert_with_msg(token_data.decimals == decimal, "Invalid token decimals");
 
     let initialize_ix =
         create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_mint);
@@ -249,14 +266,17 @@ async fn test_3() {
             panic!("Expected test_3 to fail, but succeeded");
         }
         Err(e) => {
-            assert_with_msg(e.to_string().contains("incorrect program id"), "Expected test_3 to fail with incorrect program id");
+            assert_with_msg(
+                e.to_string().contains("incorrect program id"),
+                "Expected test_3 to fail with incorrect program id",
+            );
         }
     };
 }
 
 /// Test 4 - mint test tokens with decimal 5
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_4() {
     let mut test_client = TestClient::new().await;
@@ -278,10 +298,13 @@ async fn test_4() {
     .await;
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
-    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
 
-    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+    let user_token_2022_before_balance =
+        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance =
+        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
     let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
         .await
@@ -305,28 +328,41 @@ async fn test_4() {
     {
         Ok(_sig) => {
             let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
-                &user.pubkey(), 
-                &token_2022_mint, 
+                &user.pubkey(),
+                &token_2022_mint,
                 &user_wrapper_token_account,
                 &user_token_2022_token_account,
-                amount_wrapper
+                amount_wrapper,
             );
 
             let _ = match sign_send_instructions(
-                &mut test_client, 
-                &vec![deposit_ix], 
-                vec![&user, &payer_keypair], 
-                None
-            ).await {
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
                 Ok(_sig) => {
                     tokio::time::sleep(Duration::from_millis(1_000)).await;
 
-                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+                    let user_token_2022_after_balance =
+                        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance =
+                        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
-                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
-                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
-                },
+                    assert_with_msg(
+                        user_token_2022_after_balance
+                            == user_token_2022_before_balance - amount_wrapper,
+                        "Invalid user Token2022 token balance change",
+                    );
+                    assert_with_msg(
+                        (user_wrapper_after_balance
+                            == user_wrapper_before_balance + amount_wrapper)
+                            && (user_wrapper_after_balance == amount_wrapper),
+                        "Invalid user wrapper token balance change",
+                    );
+                }
                 Err(e) => {
                     println!("Error deposit tx: {}", e);
                 }
@@ -339,7 +375,7 @@ async fn test_4() {
 }
 
 /// Test 5 - mint test tokens with decimal 8
-/// 
+///
 ///
 #[tokio::test]
 async fn test_5() {
@@ -362,10 +398,13 @@ async fn test_5() {
     .await;
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
-    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
 
-    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+    let user_token_2022_before_balance =
+        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance =
+        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
     let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
         .await
@@ -389,28 +428,41 @@ async fn test_5() {
     {
         Ok(_sig) => {
             let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
-                &user.pubkey(), 
-                &token_2022_mint, 
+                &user.pubkey(),
+                &token_2022_mint,
                 &user_wrapper_token_account,
                 &user_token_2022_token_account,
-                amount_wrapper
+                amount_wrapper,
             );
 
             let _ = match sign_send_instructions(
-                &mut test_client, 
-                &vec![deposit_ix], 
-                vec![&user, &payer_keypair], 
-                None
-            ).await {
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
                 Ok(_sig) => {
                     tokio::time::sleep(Duration::from_millis(1_000)).await;
 
-                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+                    let user_token_2022_after_balance =
+                        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance =
+                        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
-                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
-                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
-                },
+                    assert_with_msg(
+                        user_token_2022_after_balance
+                            == user_token_2022_before_balance - amount_wrapper,
+                        "Invalid user Token2022 token balance change",
+                    );
+                    assert_with_msg(
+                        (user_wrapper_after_balance
+                            == user_wrapper_before_balance + amount_wrapper)
+                            && (user_wrapper_after_balance == amount_wrapper),
+                        "Invalid user wrapper token balance change",
+                    );
+                }
                 Err(e) => {
                     println!("Error deposit tx: {}", e);
                 }
@@ -423,8 +475,8 @@ async fn test_5() {
 }
 
 /// Test 6 - mint test tokens with decimal 1
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_6() {
     let mut test_client = TestClient::new().await;
@@ -446,10 +498,13 @@ async fn test_6() {
     .await;
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
-    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
 
-    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+    let user_token_2022_before_balance =
+        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance =
+        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
     let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
         .await
@@ -473,28 +528,41 @@ async fn test_6() {
     {
         Ok(_sig) => {
             let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
-                &user.pubkey(), 
-                &token_2022_mint, 
+                &user.pubkey(),
+                &token_2022_mint,
                 &user_wrapper_token_account,
                 &user_token_2022_token_account,
-                amount_wrapper
+                amount_wrapper,
             );
 
             let _ = match sign_send_instructions(
-                &mut test_client, 
-                &vec![deposit_ix], 
-                vec![&user, &payer_keypair], 
-                None
-            ).await {
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
                 Ok(_sig) => {
                     tokio::time::sleep(Duration::from_millis(1_000)).await;
 
-                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+                    let user_token_2022_after_balance =
+                        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance =
+                        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
-                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
-                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
-                },
+                    assert_with_msg(
+                        user_token_2022_after_balance
+                            == user_token_2022_before_balance - amount_wrapper,
+                        "Invalid user Token2022 token balance change",
+                    );
+                    assert_with_msg(
+                        (user_wrapper_after_balance
+                            == user_wrapper_before_balance + amount_wrapper)
+                            && (user_wrapper_after_balance == amount_wrapper),
+                        "Invalid user wrapper token balance change",
+                    );
+                }
                 Err(e) => {
                     println!("Error deposit tx: {}", e);
                 }
@@ -507,8 +575,8 @@ async fn test_6() {
 }
 
 /// Test 7 - mint test tokens with decimal 0
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_7() {
     let mut test_client = TestClient::new().await;
@@ -530,10 +598,13 @@ async fn test_7() {
     .await;
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
-    let user_wrapper_token_account = get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
 
-    let user_token_2022_before_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-    let user_wrapper_before_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+    let user_token_2022_before_balance =
+        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+    let user_wrapper_before_balance =
+        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
     let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
         .await
@@ -557,28 +628,41 @@ async fn test_7() {
     {
         Ok(_sig) => {
             let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
-                &user.pubkey(), 
-                &token_2022_mint, 
+                &user.pubkey(),
+                &token_2022_mint,
                 &user_wrapper_token_account,
                 &user_token_2022_token_account,
-                amount_wrapper
+                amount_wrapper,
             );
 
             let _ = match sign_send_instructions(
-                &mut test_client, 
-                &vec![deposit_ix], 
-                vec![&user, &payer_keypair], 
-                None
-            ).await {
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
                 Ok(_sig) => {
                     tokio::time::sleep(Duration::from_millis(1_000)).await;
 
-                    let user_token_2022_after_balance = get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-                    let user_wrapper_after_balance = get_token_balance(&mut test_client, &user_wrapper_token_account).await;                
+                    let user_token_2022_after_balance =
+                        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                    let user_wrapper_after_balance =
+                        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
-                    assert_with_msg(user_token_2022_after_balance == user_token_2022_before_balance - amount_wrapper, "Invalid user Token2022 token balance change");
-                    assert_with_msg((user_wrapper_after_balance == user_wrapper_before_balance + amount_wrapper) && (user_wrapper_after_balance == amount_wrapper), "Invalid user wrapper token balance change");
-                },
+                    assert_with_msg(
+                        user_token_2022_after_balance
+                            == user_token_2022_before_balance - amount_wrapper,
+                        "Invalid user Token2022 token balance change",
+                    );
+                    assert_with_msg(
+                        (user_wrapper_after_balance
+                            == user_wrapper_before_balance + amount_wrapper)
+                            && (user_wrapper_after_balance == amount_wrapper),
+                        "Invalid user wrapper token balance change",
+                    );
+                }
                 Err(e) => {
                     println!("Error deposit tx: {}", e);
                 }

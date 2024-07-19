@@ -21,10 +21,9 @@ use crate::{
     utils::{
         assert_is_account_initialized, assert_is_account_uninitialized, assert_mint_authority,
         assert_rent, assert_reserve_authority, assert_reserve_authority_token_account,
-        assert_system_program, assert_token_2022_program, assert_token_program,
-        assert_wrapper_token_mint, assert_with_msg, get_reserve_authority,
-        get_reserve_authority_token_account, get_token_freeze_authority, get_token_mint_authority,
-        get_wrapper_token_mint,
+        assert_system_program, assert_token_2022_program, assert_token_program, assert_with_msg,
+        assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account,
+        get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint,
     },
 };
 
@@ -40,7 +39,9 @@ pub fn process_instruction(
         .ok_or(ProgramError::InvalidInstructionData)?;
 
     match instruction {
-        TokenWrapperInstruction::InitializeWrapperToken => process_initialize_wrapper_token(program_id, accounts),
+        TokenWrapperInstruction::InitializeWrapperToken => {
+            process_initialize_wrapper_token(program_id, accounts)
+        }
         TokenWrapperInstruction::DepositAndMintWrapperTokens => {
             let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
 
@@ -54,7 +55,10 @@ pub fn process_instruction(
     }
 }
 
-pub fn process_initialize_wrapper_token(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+pub fn process_initialize_wrapper_token(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+) -> ProgramResult {
     msg!("TokenWrapperInstruction::InitializeWrapperToken");
 
     let accounts_info_iter = &mut accounts.iter();
@@ -286,7 +290,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
                 wrapper_token_mint.clone(),
                 system_program.clone(),
                 token_program.clone(),
-                associated_token_program.clone()
+                associated_token_program.clone(),
             ],
         )?;
     }
@@ -422,7 +426,7 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         TokenWrapperError::ExpectedInitializedAccount,
         "The account is not initialized, expected to be initialized",
     )?;
-    
+
     let d = user_token_2022_token_account.try_borrow_data()?;
     let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
     let user_token_2022_data = spl_token_2022::state::Account::unpack(&d_stripped).unwrap();
