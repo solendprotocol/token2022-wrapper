@@ -1,12 +1,12 @@
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
-use solana_program_test::{processor, BanksClient, ProgramTest};
+use solana_program_test::{processor, BanksClient, BanksClientError, ProgramTest};
 use solana_sdk::{
     signature::{Keypair, Signature},
     transport::TransportError,
 };
 use thiserror::Error;
 
-pub type TransactionResult<T = ()> = std::result::Result<T, TransactionError>;
+pub type TransactionResult<T = ()> = std::result::Result<T, BanksClientError>;
 
 #[derive(Error, Debug)]
 pub enum TransactionError {

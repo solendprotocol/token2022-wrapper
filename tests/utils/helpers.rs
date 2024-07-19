@@ -1,4 +1,4 @@
-use crate::utils::{TestClient, TransactionError, TransactionResult};
+use crate::utils::{TestClient, TransactionResult};
 use solana_program::pubkey::Pubkey;
 use solana_sdk::instruction::Instruction;
 use solana_sdk::program_pack::Pack;
@@ -31,11 +31,7 @@ pub async fn sign_send_instructions(
         }
         Err(e) => {
             println!("Error: {:?}", e);
-            Err(TransactionError::TransactionFailed {
-                signature: signatures[0],
-                logs: vec![],
-            })
-            .into()
+            Err(e)
         }
     };
 
@@ -379,7 +375,7 @@ pub async fn mint_token_2022_tokens(
     };
 
     if decimals == std::u8::MAX {
-        return Err(TransactionError::InvalidData);
+        return Err(solana_program_test::BanksClientError::Io(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid decimals")));
     }
 
     let ix = spl_token_2022::instruction::mint_to_checked(
@@ -426,4 +422,19 @@ pub fn assert_with_msg(v: bool, msg: &str) {
         let caller = std::panic::Location::caller();
         println!("{}. \n{}", msg, caller);
     }
+}
+
+pub fn extract_error_code(error_message: &str) -> Option<u32> {
+    if let Some(start_index) = error_message.find("0x") {
+        let error_code_str = &error_message[start_index + 2..];
+        if let Some(end_index) = error_code_str.find(|c: char| !c.is_digit(16)) {
+            let error_code_hex = &error_code_str[..end_index];
+            if let Ok(error_code) = u32::from_str_radix(error_code_hex, 16) {
+                return Some(error_code);
+            }
+        } else if let Ok(error_code) = u32::from_str_radix(error_code_str, 16) {
+            return Some(error_code);
+        }
+    }
+    None
 }

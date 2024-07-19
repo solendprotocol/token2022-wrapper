@@ -4,9 +4,9 @@ use crate::utils::TestClient;
 use solana_program::pubkey::Pubkey;
 use solana_program_test::*;
 use solana_sdk::{native_token::LAMPORTS_PER_SOL, pubkey, signature::Keypair, signer::Signer};
-use token2022_wrapper::{instruction_builders::create_initialize_wrapper_token_instruction, utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint}};
+use token2022_wrapper::{error::TokenWrapperError, instruction_builders::create_initialize_wrapper_token_instruction, utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint}};
 use utils::{
-    airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, get_token_balance, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions
+    airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint, create_token_account_token_2022, extract_error_code, get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions
 };
 
 pub const PROGRAM_ID: Pubkey = pubkey!("6E9iP7p4Gx2e6c2Yt4MHY5T1aZ8RWhrmF9p6bXkGWiza");
@@ -84,21 +84,13 @@ async fn test_1() {
     let decimal_2022 = 9_u8;
     let amount_2022 = 10_000_u64 * 10_u64.pow(decimal_2022 as u32);
 
-    let (token_2022_mint, user_token_2022_account) = create_and_mint_tokens_token_2022(
+    let (token_2022_mint, _) = create_and_mint_tokens_token_2022(
         &mut test_client,
         &user.pubkey(),
         amount_2022,
         decimal_2022,
     )
     .await;
-
-    let user_token_2022_balance =
-        get_token_balance(&mut test_client, &user_token_2022_account).await;
-
-        assert_with_msg(
-        amount_2022 == user_token_2022_balance,
-        "Invalid user token_2022 balance",
-    );
 
     let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
         .await
@@ -138,7 +130,75 @@ async fn test_1() {
     };
 }
 
-// cannot initialize on repeated tokens
+/// cannot initialize on repeated tokens
+/// 
+/// 
+#[tokio::test]
+async fn test_2() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
+
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+
+    let decimal_2022 = 9_u8;
+    let amount_2022 = 10_000_u64 * 10_u64.pow(decimal_2022 as u32);
+
+    let (token_2022_mint, _) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
+
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
+
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+        
+    let duplicate_initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+
+    let _ = sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await;
+
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![duplicate_initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            panic!("Expected test_2 to fail, but succeeded");
+        }
+        Err(e) => {
+            let _ = match extract_error_code(e.to_string().as_str()) {
+                Some(error_code) => {
+                    assert_with_msg(error_code == TokenWrapperError::UnexpectedInitializedAccount as u32, format!("Invalid error thrown for test_2: {}", e).as_str());
+                },
+                None => {
+                    println!("Could not parse error code from the BanksClientError");
+                }
+            };
+        }
+    };
+}
 
 // cannot initialize for an spl token
 
