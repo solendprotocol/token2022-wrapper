@@ -226,7 +226,7 @@ pub fn process_initialize_wrapper_token(
             .as_slice()],
     )?;
 
-    msg!("Everything done, returning");
+    msg!("TokenWrapperInstruction::InitializeWrapperToken --> Everything done, returning");
 
     Ok(())
 }
@@ -375,7 +375,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
             .as_slice()],
     )?;
 
-    msg!("Everything done, returning");
+    msg!("TokenWrapperInstruction::DepositAndMintWrapperTokens --> Everything done, returning");
 
     Ok(())
 }
@@ -494,10 +494,10 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         &user_withdraw_ix,
         &[
             token_2022_program.clone(),
-            user_token_2022_token_account.clone(),
-            token_2022_mint.clone(),
             reserve_token_2022_token_account.clone(),
-            user_authority.clone(),
+            token_2022_mint.clone(),
+            user_token_2022_token_account.clone(),
+            reserve_authority.clone(),
         ],
         &[reserve_authority_seeds
             .iter()
@@ -505,6 +505,8 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
             .collect::<Vec<&[u8]>>()
             .as_slice()],
     )?;
+
+    msg!("TokenWrapperInstruction::WithdrawAndBurnWrapperTokens --> Everything done, returning");
 
     Ok(())
 }
