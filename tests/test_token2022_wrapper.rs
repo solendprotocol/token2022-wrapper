@@ -82,6 +82,63 @@ pub async fn create_and_mint_tokens_token_2022(
     (token_mint, token_account)
 }
 
+pub async fn create_and_mint_frozen_tokens_token_2022(
+    client: &mut TestClient,
+    recipient: &Pubkey,
+    amount: u64,
+    decimals: u8,
+) -> (Pubkey, Pubkey, bool) {
+    let payer_keypair = client.get_payer_clone();
+
+    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), Some(&payer_keypair.pubkey()), decimals, None)
+        .await
+        .unwrap();
+
+    let token_account = create_token_account_token_2022(client, &recipient, &token_mint)
+        .await
+        .unwrap();
+
+    let _ = mint_token_2022_tokens(
+        client,
+        &payer_keypair,
+        &token_mint,
+        &token_account,
+        amount,
+        None,
+    )
+    .await;
+
+    let freeze_ix = spl_token_2022::instruction::freeze_account(
+        &spl_token_2022::id(),
+        &token_account,
+        &token_mint,
+        &payer_keypair.pubkey(),
+        &[
+            &payer_keypair.pubkey(),
+        ],
+    ).unwrap();
+
+    let status = match sign_send_instructions(
+        client,
+        &[
+            freeze_ix
+        ], 
+        vec![
+            &payer_keypair
+        ], 
+        None
+    ).await {
+        Ok(_) => {
+            true
+        },
+        Err(_) => {
+            false
+        }
+    };
+
+    (token_mint, token_account, status)
+}
+
 /// Test 1 - testing successful initialization of a wrapper token mint for a Token 2022 mint
 ///
 ///
@@ -674,11 +731,279 @@ async fn test_7() {
     };
 }
 
-// Test 8 - cannot mint if not owned
+/// Test 8 - cannot mint if not owned
+/// 
+/// 
+#[tokio::test]
+async fn test_8() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
 
-// Test 9 - cannot mint with an invalid token deposit
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
 
-// Test 10 - cannot mint if tokens are frozen
+    let decimal_2022 = 5_u8;
+    let amount_2022 = 0u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = 2u64;
+
+    let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
+
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
+
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                &user.pubkey(),
+                &token_2022_mint,
+                &user_wrapper_token_account,
+                &user_token_2022_token_account,
+                amount_wrapper,
+            );
+
+            let _ = match sign_send_instructions(
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
+                Ok(_sig) => {
+                    panic!("Expected test_8 to fail, but succeeded");
+                }
+                Err(e) => {
+                    let _ = match extract_error_code(e.to_string().as_str()) {
+                        Some(error_code) => {
+                            assert_with_msg(
+                                error_code == 1 as u32, // Error code 0x1 --> Insufficient funds
+                                format!("Invalid error thrown for test_8: {}", e).as_str(),
+                            );
+                        }
+                        None => {
+                            println!("Could not parse error code from the BanksClientError");
+                        }
+                    };
+                }
+            };
+        }
+        Err(e) => {
+            println!("Error initializing token mint: {}", e);
+        }
+    };
+}
+
+/// Test 9 - cannot mint with an invalid token deposit
+/// 
+/// 
+#[tokio::test]
+async fn test_9() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
+
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+
+    let decimal_2022 = 5_u8;
+    let amount_2022 = 10_000u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = amount_2022 / 2;
+
+    let (token_2022_mint, _) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+
+    let (token_2022_mint_secondary, user_token_2022_token_account_secondary) = create_and_mint_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
+
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
+
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                &user.pubkey(),
+                &token_2022_mint_secondary,
+                &user_wrapper_token_account,
+                &user_token_2022_token_account_secondary,
+                amount_wrapper,
+            );
+
+            let _ = match sign_send_instructions(
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
+                Ok(_sig) => {
+                    panic!("Expected test_9 to fail, but succeeded");
+                }
+                Err(e) => {
+                    let _ = match extract_error_code(e.to_string().as_str()) {
+                        Some(error_code) => {
+                            assert_with_msg(
+                                error_code == TokenWrapperError::ExpectedInitializedAccount as u32,
+                                format!("Invalid error thrown for test_9: {}", e).as_str(),
+                            );
+                        }
+                        None => {
+                            println!("Could not parse error code from the BanksClientError");
+                        }
+                    };
+                }
+            };
+        }
+        Err(e) => {
+            println!("Error initializing token mint: {}", e);
+        }
+    };
+}
+
+/// Test 10 - cannot mint if tokens are frozen
+/// 
+/// 
+#[tokio::test]
+async fn test_10() {
+    let mut test_client = TestClient::new().await;
+    let payer_keypair = test_client.get_payer_clone();
+
+    let user = Keypair::new();
+    let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+
+    let decimal_2022 = 5_u8;
+    let amount_2022 = 0u64 * 10_u64.pow(decimal_2022 as u32);
+    let amount_wrapper = 2u64;
+
+    let (token_2022_mint, user_token_2022_token_account, _) = create_and_mint_frozen_tokens_token_2022(
+        &mut test_client,
+        &user.pubkey(),
+        amount_2022,
+        decimal_2022,
+    )
+    .await;
+
+    let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+    let user_wrapper_token_account =
+        get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+    let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+        .await
+        .unwrap();
+
+    assert_with_msg(
+        token_2022_data.decimals == decimal_2022,
+        "Invalid token_2022 decimals",
+    );
+
+    let initialize_ix =
+        create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+    let _ = match sign_send_instructions(
+        &mut test_client,
+        &vec![initialize_ix],
+        vec![&payer_keypair],
+        None,
+    )
+    .await
+    {
+        Ok(_sig) => {
+            let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                &user.pubkey(),
+                &token_2022_mint,
+                &user_wrapper_token_account,
+                &user_token_2022_token_account,
+                amount_wrapper,
+            );
+
+            let _ = match sign_send_instructions(
+                &mut test_client,
+                &vec![deposit_ix],
+                vec![&user, &payer_keypair],
+                None,
+            )
+            .await
+            {
+                Ok(_sig) => {
+                    panic!("Expected test_10 to fail, but succeeded");
+                }
+                Err(e) => {
+                    let _ = match extract_error_code(e.to_string().as_str()) {
+                        Some(error_code) => {
+                            assert_with_msg(
+                                error_code == 17 as u32, // Error code 17 --> Account is frozen
+                                format!("Invalid error thrown for test_10: {}", e).as_str(),
+                            );
+                        }
+                        None => {
+                            println!("Could not parse error code from the BanksClientError");
+                        }
+                    };
+                }
+            };
+        }
+        Err(e) => {
+            println!("Error initializing token mint: {}", e);
+        }
+    };
+}
 
 // Test 11 - cannot mint if max supply is reached
 
