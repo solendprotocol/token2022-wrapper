@@ -1,8 +1,9 @@
 use num_enum::TryFromPrimitive;
 use solana_program::{msg, program_error::ProgramError};
+use shank::ShankInstruction;
 
 #[repr(u8)]
-#[derive(TryFromPrimitive, Clone, Copy, PartialEq, Eq)]
+#[derive(TryFromPrimitive, Clone, Copy, ShankInstruction, PartialEq, Eq)]
 pub enum TokenWrapperInstruction {
     /// 0
     /// Initializes a wrapper token mint on the Token Program for a particular Token 2022 token

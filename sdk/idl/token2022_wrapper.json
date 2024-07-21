@@ -1,0 +1,104 @@
+{
+  "version": "0.1.0",
+  "name": "token2022_wrapper",
+  "instructions": [
+    {
+      "name": "InitializeWrapperToken",
+      "accounts": [],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
+      "name": "DepositAndMintWrapperTokens",
+      "accounts": [],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
+      "name": "WithdrawAndBurnWrapperTokens",
+      "accounts": [],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 0,
+      "name": "UnexpectedWrapperToken",
+      "msg": "Unexpected wrapper token mint"
+    },
+    {
+      "code": 1,
+      "name": "UnexpectedTokenProgram",
+      "msg": "Unexpected SPL Token Program"
+    },
+    {
+      "code": 2,
+      "name": "UnexpectedToken2022Program",
+      "msg": "Unexpected Token 2022 Program"
+    },
+    {
+      "code": 3,
+      "name": "UnexpectedSystemProgram",
+      "msg": "Unexpected System Program"
+    },
+    {
+      "code": 4,
+      "name": "UnexpectedRent",
+      "msg": "Unexpected Rent"
+    },
+    {
+      "code": 5,
+      "name": "UnexpectedInitializedAccount",
+      "msg": "Unexpected initialized account"
+    },
+    {
+      "code": 6,
+      "name": "ExpectedInitializedAccount",
+      "msg": "Expected initialized account"
+    },
+    {
+      "code": 7,
+      "name": "UnexpectedUserTokenAccountOwner",
+      "msg": "Unexpected user token account owner"
+    },
+    {
+      "code": 8,
+      "name": "UnexpectedReserveTokenAccountOwner",
+      "msg": "Unexpected reserve token account owner"
+    },
+    {
+      "code": 9,
+      "name": "UnexpectedReserveTokenAccount",
+      "msg": "Unexpected reserve token account"
+    },
+    {
+      "code": 10,
+      "name": "UnexpectedReserveAuthority",
+      "msg": "Unexpected reserve authority"
+    },
+    {
+      "code": 11,
+      "name": "UnexpectedMintAuthority",
+      "msg": "Unexpected mint authority"
+    },
+    {
+      "code": 12,
+      "name": "UnexpectedFreezeAuthority",
+      "msg": "Unexpected freeze authority"
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "6E9iP7p4Gx2e6c2Yt4MHY5T1aZ8RWhrmF9p6bXkGWiza"
+  }
+}

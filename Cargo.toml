@@ -7,15 +7,18 @@ crate-type = ["cdylib", "lib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+shank = "=0.4.2"
 solana-program = "2.0.1"
 spl-token = "6.0.0"
 spl-token-2022 = "4.0.0"
-thiserror = "1.0"
 num_enum = "=0.5.9"
 spl-associated-token-account = "4.0.0"
-solana-program-test = "2.0.1"
+itertools = "0.13.0"
+thiserror = "1.0"
+
+[dev-dependencies]
 tokio = { version = "1", features = ["full"] }
 solana-sdk = "2.0.1"
 anyhow = "1.0.86"
+solana-program-test = "2.0.1"
 solana-client = "2.0.1"
-itertools = "0.13.0"

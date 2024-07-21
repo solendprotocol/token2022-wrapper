@@ -10,10 +10,10 @@ use solana_program::{
     program_pack::Pack,
     pubkey::Pubkey,
 };
-use solana_sdk::sysvar::Sysvar;
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
+use solana_program::sysvar::Sysvar;
 
 use crate::{
     error::TokenWrapperError,

@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+      "@metaplex-foundation/rustbin": "^0.3.1",
+      "@metaplex-foundation/solita": "^0.19.4"
+    }
+  }
+  
