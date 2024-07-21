@@ -366,7 +366,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
             token_program.clone(),
             wrapper_token_mint.clone(),
             user_wrapper_token_account.clone(),
-            mint_authority.clone(),
+            mint_authority.clone()
         ],
         &[mint_authority_seeds
             .iter()
