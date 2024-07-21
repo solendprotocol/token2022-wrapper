@@ -1,6 +1,7 @@
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::rent::Rent;
 use solana_program::system_instruction::SystemInstruction;
+use solana_program::sysvar::Sysvar;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
@@ -13,7 +14,6 @@ use solana_program::{
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
-use solana_program::sysvar::Sysvar;
 
 use crate::{
     error::TokenWrapperError,

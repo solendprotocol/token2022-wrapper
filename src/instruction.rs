@@ -1,6 +1,6 @@
 use num_enum::TryFromPrimitive;
-use solana_program::{msg, program_error::ProgramError};
 use shank::ShankInstruction;
+use solana_program::{msg, program_error::ProgramError};
 
 #[repr(u8)]
 #[derive(TryFromPrimitive, Clone, Copy, ShankInstruction, PartialEq, Eq)]
