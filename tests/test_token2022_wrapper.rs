@@ -133,7 +133,11 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
     (token_mint, token_account, status)
 }
 
-/// Test 1 - testing successful initialization of a wrapper token mint for a Token 2022 mint
+mod tests {
+
+    use super::*;
+    
+    /// Test 1 - testing successful initialization of a wrapper token mint for a Token 2022 mint
 ///
 ///
 #[tokio::test]
@@ -2035,3 +2039,6 @@ async fn test_17() {
         }
     };
 }
+
+}
+
