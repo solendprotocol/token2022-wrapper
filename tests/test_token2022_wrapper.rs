@@ -11,7 +11,8 @@ use token2022_wrapper::{
     error::TokenWrapperError,
     instruction_builders::{
         create_deposit_and_mint_wrapper_tokens_instruction,
-        create_initialize_wrapper_token_instruction, create_withdraw_and_burn_wrapper_tokens_instruction,
+        create_initialize_wrapper_token_instruction,
+        create_withdraw_and_burn_wrapper_tokens_instruction,
     },
     utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint},
 };
@@ -90,9 +91,15 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
 ) -> (Pubkey, Pubkey, bool) {
     let payer_keypair = client.get_payer_clone();
 
-    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), Some(&payer_keypair.pubkey()), decimals, None)
-        .await
-        .unwrap();
+    let token_mint = create_token_2022_mint(
+        client,
+        &payer_keypair.pubkey(),
+        Some(&payer_keypair.pubkey()),
+        decimals,
+        None,
+    )
+    .await
+    .unwrap();
 
     let token_account = create_token_account_token_2022(client, &recipient, &token_mint)
         .await
@@ -113,28 +120,15 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
         &token_account,
         &token_mint,
         &payer_keypair.pubkey(),
-        &[
-            &payer_keypair.pubkey(),
-        ],
-    ).unwrap();
+        &[&payer_keypair.pubkey()],
+    )
+    .unwrap();
 
-    let status = match sign_send_instructions(
-        client,
-        &[
-            freeze_ix
-        ], 
-        vec![
-            &payer_keypair
-        ], 
-        None
-    ).await {
-        Ok(_) => {
-            true
-        },
-        Err(_) => {
-            false
-        }
-    };
+    let status =
+        match sign_send_instructions(client, &[freeze_ix], vec![&payer_keypair], None).await {
+            Ok(_) => true,
+            Err(_) => false,
+        };
 
     (token_mint, token_account, status)
 }
@@ -732,8 +726,8 @@ async fn test_7() {
 }
 
 /// Test 8 - cannot mint if not owned
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_8() {
     let mut test_client = TestClient::new().await;
@@ -820,8 +814,8 @@ async fn test_8() {
 }
 
 /// Test 9 - cannot mint with an invalid token deposit
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_9() {
     let mut test_client = TestClient::new().await;
@@ -842,13 +836,14 @@ async fn test_9() {
     )
     .await;
 
-    let (token_2022_mint_secondary, user_token_2022_token_account_secondary) = create_and_mint_tokens_token_2022(
-        &mut test_client,
-        &user.pubkey(),
-        amount_2022,
-        decimal_2022,
-    )
-    .await;
+    let (token_2022_mint_secondary, user_token_2022_token_account_secondary) =
+        create_and_mint_tokens_token_2022(
+            &mut test_client,
+            &user.pubkey(),
+            amount_2022,
+            decimal_2022,
+        )
+        .await;
 
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
@@ -917,8 +912,8 @@ async fn test_9() {
 }
 
 /// Test 10 - cannot mint if tokens are frozen
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_10() {
     let mut test_client = TestClient::new().await;
@@ -931,13 +926,14 @@ async fn test_10() {
     let amount_2022 = 0u64 * 10_u64.pow(decimal_2022 as u32);
     let amount_wrapper = 2u64;
 
-    let (token_2022_mint, user_token_2022_token_account, _) = create_and_mint_frozen_tokens_token_2022(
-        &mut test_client,
-        &user.pubkey(),
-        amount_2022,
-        decimal_2022,
-    )
-    .await;
+    let (token_2022_mint, user_token_2022_token_account, _) =
+        create_and_mint_frozen_tokens_token_2022(
+            &mut test_client,
+            &user.pubkey(),
+            amount_2022,
+            decimal_2022,
+        )
+        .await;
 
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
@@ -1006,8 +1002,8 @@ async fn test_10() {
 }
 
 /// Test 11 - burn test tokens with decimal 5
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_11() {
     let mut test_client = TestClient::new().await;
@@ -1094,11 +1090,11 @@ async fn test_11() {
                     );
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user.pubkey(), 
-                        &token_2022_mint, 
-                        &user_wrapper_token_account, 
-                        &user_token_2022_token_account, 
-                        amount_wrapper
+                        &user.pubkey(),
+                        &token_2022_mint,
+                        &user_wrapper_token_account,
+                        &user_token_2022_token_account,
+                        amount_wrapper,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1107,14 +1103,16 @@ async fn test_11() {
                         vec![&user, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
                             let user_token_2022_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                                get_token_balance(&mut test_client, &user_token_2022_token_account)
+                                    .await;
                             let user_wrapper_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+                                get_token_balance(&mut test_client, &user_wrapper_token_account)
+                                    .await;
 
-                            
                             assert_with_msg(
                                 user_token_2022_before_balance
                                     == user_token_2022_after_burn_balance,
@@ -1124,8 +1122,7 @@ async fn test_11() {
                                 user_wrapper_after_burn_balance == 0,
                                 "Invalid user wrapper token after burn balance change",
                             );
-
-                        },
+                        }
                         Err(e) => {
                             println!("Error burning wrapper tokens transaction: {}", e);
                         }
@@ -1143,8 +1140,8 @@ async fn test_11() {
 }
 
 /// Test 12 - burn test tokens with decimal 8
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_12() {
     let mut test_client = TestClient::new().await;
@@ -1231,11 +1228,11 @@ async fn test_12() {
                     );
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user.pubkey(), 
-                        &token_2022_mint, 
-                        &user_wrapper_token_account, 
-                        &user_token_2022_token_account, 
-                        amount_wrapper
+                        &user.pubkey(),
+                        &token_2022_mint,
+                        &user_wrapper_token_account,
+                        &user_token_2022_token_account,
+                        amount_wrapper,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1244,14 +1241,16 @@ async fn test_12() {
                         vec![&user, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
                             let user_token_2022_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                                get_token_balance(&mut test_client, &user_token_2022_token_account)
+                                    .await;
                             let user_wrapper_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+                                get_token_balance(&mut test_client, &user_wrapper_token_account)
+                                    .await;
 
-                            
                             assert_with_msg(
                                 user_token_2022_before_balance
                                     == user_token_2022_after_burn_balance,
@@ -1261,8 +1260,7 @@ async fn test_12() {
                                 user_wrapper_after_burn_balance == 0,
                                 "Invalid user wrapper token after burn balance change",
                             );
-
-                        },
+                        }
                         Err(e) => {
                             println!("Error burning wrapper tokens transaction: {}", e);
                         }
@@ -1280,8 +1278,8 @@ async fn test_12() {
 }
 
 /// Test 13 - burn test tokens with decimal 1
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_13() {
     let mut test_client = TestClient::new().await;
@@ -1368,11 +1366,11 @@ async fn test_13() {
                     );
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user.pubkey(), 
-                        &token_2022_mint, 
-                        &user_wrapper_token_account, 
-                        &user_token_2022_token_account, 
-                        amount_wrapper
+                        &user.pubkey(),
+                        &token_2022_mint,
+                        &user_wrapper_token_account,
+                        &user_token_2022_token_account,
+                        amount_wrapper,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1381,14 +1379,16 @@ async fn test_13() {
                         vec![&user, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
                             let user_token_2022_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                                get_token_balance(&mut test_client, &user_token_2022_token_account)
+                                    .await;
                             let user_wrapper_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+                                get_token_balance(&mut test_client, &user_wrapper_token_account)
+                                    .await;
 
-                            
                             assert_with_msg(
                                 user_token_2022_before_balance
                                     == user_token_2022_after_burn_balance,
@@ -1398,8 +1398,7 @@ async fn test_13() {
                                 user_wrapper_after_burn_balance == 0,
                                 "Invalid user wrapper token after burn balance change",
                             );
-
-                        },
+                        }
                         Err(e) => {
                             println!("Error burning wrapper tokens transaction: {}", e);
                         }
@@ -1417,7 +1416,7 @@ async fn test_13() {
 }
 
 /// Test 14 - burn test tokens with decimal 0
-/// 
+///
 ///
 #[tokio::test]
 async fn test_14() {
@@ -1505,11 +1504,11 @@ async fn test_14() {
                     );
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user.pubkey(), 
-                        &token_2022_mint, 
-                        &user_wrapper_token_account, 
-                        &user_token_2022_token_account, 
-                        amount_wrapper
+                        &user.pubkey(),
+                        &token_2022_mint,
+                        &user_wrapper_token_account,
+                        &user_token_2022_token_account,
+                        amount_wrapper,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1518,14 +1517,16 @@ async fn test_14() {
                         vec![&user, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
                             let user_token_2022_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+                                get_token_balance(&mut test_client, &user_token_2022_token_account)
+                                    .await;
                             let user_wrapper_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+                                get_token_balance(&mut test_client, &user_wrapper_token_account)
+                                    .await;
 
-                            
                             assert_with_msg(
                                 user_token_2022_before_balance
                                     == user_token_2022_after_burn_balance,
@@ -1535,8 +1536,7 @@ async fn test_14() {
                                 user_wrapper_after_burn_balance == 0,
                                 "Invalid user wrapper token after burn balance change",
                             );
-
-                        },
+                        }
                         Err(e) => {
                             println!("Error burning wrapper tokens transaction: {}", e);
                         }
@@ -1554,8 +1554,8 @@ async fn test_14() {
 }
 
 /// Test 15 - cannot burn if not owned
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_15() {
     let mut test_client = TestClient::new().await;
@@ -1643,11 +1643,11 @@ async fn test_15() {
                     );
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user.pubkey(), 
-                        &token_2022_mint, 
-                        &user_wrapper_token_account, 
-                        &user_token_2022_token_account, 
-                        amount_wrapper_burn
+                        &user.pubkey(),
+                        &token_2022_mint,
+                        &user_wrapper_token_account,
+                        &user_token_2022_token_account,
+                        amount_wrapper_burn,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1656,18 +1656,24 @@ async fn test_15() {
                         vec![&user, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
                             panic!("Expected test_15 to fail, but succeeded");
-                        },
+                        }
                         Err(e) => {
                             let _ = match extract_error_code(e.to_string().as_str()) {
                                 Some(error_code) => {
-
-                                    let user_token_2022_after_burn_balance =
-                                        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-                                    let user_wrapper_after_burn_balance =
-                                        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+                                    let user_token_2022_after_burn_balance = get_token_balance(
+                                        &mut test_client,
+                                        &user_token_2022_token_account,
+                                    )
+                                    .await;
+                                    let user_wrapper_after_burn_balance = get_token_balance(
+                                        &mut test_client,
+                                        &user_wrapper_token_account,
+                                    )
+                                    .await;
 
                                     assert_with_msg(
                                         user_token_2022_after_balance
@@ -1675,7 +1681,8 @@ async fn test_15() {
                                         "Invalid user Token2022 token after burn balance change",
                                     );
                                     assert_with_msg(
-                                        user_wrapper_after_balance == user_wrapper_after_burn_balance,
+                                        user_wrapper_after_balance
+                                            == user_wrapper_after_burn_balance,
                                         "Invalid user wrapper token after burn balance change",
                                     );
 
@@ -1685,7 +1692,9 @@ async fn test_15() {
                                     );
                                 }
                                 None => {
-                                    println!("Could not parse error code from the BanksClientError");
+                                    println!(
+                                        "Could not parse error code from the BanksClientError"
+                                    );
                                 }
                             };
                         }
@@ -1703,8 +1712,8 @@ async fn test_15() {
 }
 
 /// Test 16 - cannot burn for an invalid token22 deposit
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_16() {
     let mut test_client = TestClient::new().await;
@@ -1726,13 +1735,14 @@ async fn test_16() {
     )
     .await;
 
-    let (token_2022_mint_duplicate, user_token_2022_token_account_duplicate) = create_and_mint_tokens_token_2022(
-        &mut test_client,
-        &user.pubkey(),
-        amount_2022,
-        decimal_2022,
-    )
-    .await;
+    let (token_2022_mint_duplicate, user_token_2022_token_account_duplicate) =
+        create_and_mint_tokens_token_2022(
+            &mut test_client,
+            &user.pubkey(),
+            amount_2022,
+            decimal_2022,
+        )
+        .await;
 
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
 
@@ -1800,11 +1810,11 @@ async fn test_16() {
                     );
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user.pubkey(), 
-                        &token_2022_mint_duplicate, 
-                        &user_wrapper_token_account, 
-                        &user_token_2022_token_account_duplicate, 
-                        amount_wrapper_burn
+                        &user.pubkey(),
+                        &token_2022_mint_duplicate,
+                        &user_wrapper_token_account,
+                        &user_token_2022_token_account_duplicate,
+                        amount_wrapper_burn,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1813,18 +1823,24 @@ async fn test_16() {
                         vec![&user, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
                             panic!("Expected test_16 to fail, but succeeded");
-                        },
+                        }
                         Err(e) => {
                             let _ = match extract_error_code(e.to_string().as_str()) {
                                 Some(error_code) => {
-
-                                    let user_token_2022_after_burn_balance =
-                                        get_token_balance(&mut test_client, &user_token_2022_token_account).await;
-                                    let user_wrapper_after_burn_balance =
-                                        get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+                                    let user_token_2022_after_burn_balance = get_token_balance(
+                                        &mut test_client,
+                                        &user_token_2022_token_account,
+                                    )
+                                    .await;
+                                    let user_wrapper_after_burn_balance = get_token_balance(
+                                        &mut test_client,
+                                        &user_wrapper_token_account,
+                                    )
+                                    .await;
 
                                     assert_with_msg(
                                         user_token_2022_after_balance
@@ -1832,17 +1848,21 @@ async fn test_16() {
                                         "Invalid user Token2022 token after burn balance change",
                                     );
                                     assert_with_msg(
-                                        user_wrapper_after_balance == user_wrapper_after_burn_balance,
+                                        user_wrapper_after_balance
+                                            == user_wrapper_after_burn_balance,
                                         "Invalid user wrapper token after burn balance change",
                                     );
 
                                     assert_with_msg(
-                                        error_code == TokenWrapperError::ExpectedInitializedAccount as u32,
+                                        error_code
+                                            == TokenWrapperError::ExpectedInitializedAccount as u32,
                                         format!("Invalid error thrown for test_16: {}", e).as_str(),
                                     );
                                 }
                                 None => {
-                                    println!("Could not parse error code from the BanksClientError");
+                                    println!(
+                                        "Could not parse error code from the BanksClientError"
+                                    );
                                 }
                             };
                         }
@@ -1860,8 +1880,8 @@ async fn test_16() {
 }
 
 /// Test 17 - works if user A mints, sends it to user B and user B withdraws
-/// 
-/// 
+///
+///
 #[tokio::test]
 async fn test_17() {
     let mut test_client = TestClient::new().await;
@@ -1928,9 +1948,14 @@ async fn test_17() {
             .await
             {
                 Ok(_sig) => {
-                    let user_2_wrapper_token_account = create_associated_token_account(&mut test_client, &user_2.pubkey(), &wrapper_token_mint, &spl_token::id())
-                        .await
-                        .unwrap();
+                    let user_2_wrapper_token_account = create_associated_token_account(
+                        &mut test_client,
+                        &user_2.pubkey(),
+                        &wrapper_token_mint,
+                        &spl_token::id(),
+                    )
+                    .await
+                    .unwrap();
 
                     let transfer_ix = spl_token::instruction::transfer_checked(
                         &spl_token::id(),
@@ -1940,23 +1965,32 @@ async fn test_17() {
                         &user.pubkey(),
                         &[&user.pubkey()],
                         amount_wrapper_burn,
-                        decimal_2022
-                    ).unwrap();
+                        decimal_2022,
+                    )
+                    .unwrap();
 
-                    let _ = sign_send_instructions(&mut test_client, &[transfer_ix], vec![&user, &payer_keypair], None).await;
+                    let _ = sign_send_instructions(
+                        &mut test_client,
+                        &[transfer_ix],
+                        vec![&user, &payer_keypair],
+                        None,
+                    )
+                    .await;
 
                     let user_2_token_2022_token_account = create_token_account_token_2022(
-                        &mut test_client, 
+                        &mut test_client,
                         &user_2.pubkey(),
-                        &token_2022_mint
-                    ).await.unwrap();
+                        &token_2022_mint,
+                    )
+                    .await
+                    .unwrap();
 
                     let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-                        &user_2.pubkey(), 
-                        &token_2022_mint, 
-                        &user_2_wrapper_token_account, 
-                        &user_2_token_2022_token_account, 
-                        amount_wrapper_burn
+                        &user_2.pubkey(),
+                        &token_2022_mint,
+                        &user_2_wrapper_token_account,
+                        &user_2_token_2022_token_account,
+                        amount_wrapper_burn,
                     );
 
                     let _ = match sign_send_instructions(
@@ -1965,23 +1999,27 @@ async fn test_17() {
                         vec![&user_2, &payer_keypair],
                         None,
                     )
-                    .await {
+                    .await
+                    {
                         Ok(_) => {
-                            let user_2_token_2022_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_2_token_2022_token_account).await;
+                            let user_2_token_2022_after_burn_balance = get_token_balance(
+                                &mut test_client,
+                                &user_2_token_2022_token_account,
+                            )
+                            .await;
                             let user_2_wrapper_after_burn_balance =
-                                get_token_balance(&mut test_client, &user_2_wrapper_token_account).await;
+                                get_token_balance(&mut test_client, &user_2_wrapper_token_account)
+                                    .await;
 
                             assert_with_msg(
-                                user_2_token_2022_after_burn_balance
-                                    == amount_wrapper_burn,
+                                user_2_token_2022_after_burn_balance == amount_wrapper_burn,
                                 "Invalid user 2 Token2022 token after burn balance change",
                             );
                             assert_with_msg(
                                 user_2_wrapper_after_burn_balance == 0,
                                 "Invalid user 2 wrapper token after burn balance change",
                             );
-                        },
+                        }
                         Err(e) => {
                             println!("Error burn tx: {}", e);
                         }
