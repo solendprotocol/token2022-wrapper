@@ -2,9 +2,9 @@ import * as web3 from "@solana/web3.js";
 import { FREEZE_AUTHORITY_SEED, MINT_AUTHORITY_SEED, PROGRAM_ID, RESERVE_AUTHORITY_SEED, RESERVE_AUTHORITY_TOKEN_ACCOUNT_SEED } from "../constants";
 import { WRAPPER_TOKEN_MINT_SEED } from "../constants";
 
-export const getWrapperTokenMint = async(
+export const getWrapperTokenMint = (
     token2022Mint: web3.PublicKey
-): Promise<web3.PublicKey> => {
+): web3.PublicKey => {
     const [wrapperTokenMint, _] = web3.PublicKey.findProgramAddressSync(
         [
             WRAPPER_TOKEN_MINT_SEED,
@@ -16,9 +16,9 @@ export const getWrapperTokenMint = async(
     return wrapperTokenMint;
 }
 
-export const getReserveAuthority = async(
+export const getReserveAuthority = (
     token2022Mint: web3.PublicKey
-): Promise<web3.PublicKey> => {
+): web3.PublicKey => {
     const [reserveAuthority, _] = web3.PublicKey.findProgramAddressSync(
         [
             RESERVE_AUTHORITY_SEED,
@@ -30,10 +30,10 @@ export const getReserveAuthority = async(
     return reserveAuthority;
 }
 
-export const getReserveAuthorityTokenAccount = async(
+export const getReserveAuthorityTokenAccount = (
     token2022Mint: web3.PublicKey
-): Promise<web3.PublicKey> => {
-    let reserveAuthority = await getReserveAuthority(token2022Mint);
+): web3.PublicKey => {
+    let reserveAuthority = getReserveAuthority(token2022Mint);
 
     const [reserveAuthorityTokenAccount, _] = web3.PublicKey.findProgramAddressSync(
         [
@@ -47,9 +47,9 @@ export const getReserveAuthorityTokenAccount = async(
     return reserveAuthorityTokenAccount;
 }
 
-export const getMintAuthority = async(
+export const getMintAuthority = (
     token2022Mint: web3.PublicKey
-): Promise<web3.PublicKey> => {
+): web3.PublicKey => {
     const [mintAuthority, _] = web3.PublicKey.findProgramAddressSync(
         [
             MINT_AUTHORITY_SEED,
@@ -61,9 +61,9 @@ export const getMintAuthority = async(
     return mintAuthority;
 }
 
-export const getFreezeAuthority = async(
+export const getFreezeAuthority = (
     token2022Mint: web3.PublicKey
-): Promise<web3.PublicKey> => {
+): web3.PublicKey => {
     const [freezeAuthority, _] = web3.PublicKey.findProgramAddressSync(
         [
             FREEZE_AUTHORITY_SEED,
