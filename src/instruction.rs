@@ -33,7 +33,7 @@ pub enum TokenWrapperInstruction {
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Mint authority for the wrapper token
-    ///     Must be a PDA with seeds ["min_authority", Token2022 token mint]
+    ///     Must be a PDA with seeds ["mint_authority", Token2022 token mint]
     /// 3. `[]` Token2022 token mint
     /// 4. `[]` Wrapper token mint
     /// 5. `[writable]` User's token account for the wrapper token

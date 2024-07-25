@@ -110,6 +110,7 @@ pub fn process_initialize_wrapper_token(
     let rent = Rent::get().unwrap();
     let mint_lamports = rent.minimum_balance(mint_data_length as usize);
 
+    // TODO - use Instruction::new_with_borsh
     let create_mint_account_ix = Instruction::new_with_bincode(
         *system_program.key,
         &SystemInstruction::CreateAccount {
@@ -295,6 +296,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         )?;
     }
 
+    // TODO - Don't use the same var names labels
     let d = user_token_2022_token_account.try_borrow_data()?;
     let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
     let user_token_2022_data = spl_token_2022::state::Account::unpack(&d_stripped).unwrap();
@@ -350,6 +352,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let (_, _, mint_authority_seeds) =
         get_token_mint_authority(*wrapper_token_mint.key, *program_id);
 
+    // TODO - Factor in transfer fee when calculating amount (if enabled)
     let user_mint_ix = spl_token::instruction::mint_to_checked(
         token_program.key,
         wrapper_token_mint.key,
@@ -376,6 +379,9 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     )?;
 
     msg!("TokenWrapperInstruction::DepositAndMintWrapperTokens --> Everything done, returning");
+
+    // TODO - Support extensions like transfer fee or yield bearing, or just don't allow T22 to use this program for 
+    // avoiding unknown unknowns.
 
     Ok(())
 }
