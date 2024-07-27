@@ -314,6 +314,8 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         "The reserve does not own the token account for this Token 2022 token",
     )?;
 
+    let pre_transfer_balance = reserve_token_2022_data.amount;
+
     let user_deposit_ix = spl_token_2022::instruction::transfer_checked(
         token_2022_program.key,
         user_token_2022_token_account.key,
@@ -336,6 +338,11 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         ],
     )?;
 
+    let reserve_token_account_data_copy = reserve_token_2022_token_account.try_borrow_data()?;
+    let (reserve_token_account_data_copy_stripped, _) = reserve_token_account_data_copy.split_at(spl_token::state::Account::LEN);
+    let post_transfer_balance = spl_token_2022::state::Account::unpack(&reserve_token_account_data_copy_stripped)?.amount;
+    drop(reserve_token_account_data_copy);
+
     let (_, _, mint_authority_seeds) =
         get_token_mint_authority(*wrapper_token_mint.key, *program_id);
 
@@ -346,7 +353,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         user_wrapper_token_account.key,
         mint_authority.key,
         &[mint_authority.key],
-        amount,
+        post_transfer_balance - pre_transfer_balance,
         token_2022_mint_data.decimals,
     )?;
 
