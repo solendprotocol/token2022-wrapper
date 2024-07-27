@@ -284,31 +284,30 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         )?;
     }
 
-    // TODO - Don't use the same var names labels
-    let d = user_token_2022_token_account.try_borrow_data()?;
-    let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
-    let user_token_2022_data = spl_token_2022::state::Account::unpack(&d_stripped).unwrap();
-    drop(d);
+    let user_token_2022_token_account_data = user_token_2022_token_account.try_borrow_data()?;
+    let (user_token_2022_token_account_data_stripped, _) = user_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_token_2022_data = spl_token_2022::state::Account::unpack(&user_token_2022_token_account_data_stripped).unwrap();
+    drop(user_token_2022_token_account_data);
     assert_with_msg(
         &user_token_2022_data.owner == user_authority.key,
         TokenWrapperError::UnexpectedUserTokenAccountOwner,
         "User does not own the token account for this Token 2022 token",
     )?;
 
-    let d = user_wrapper_token_account.try_borrow_data()?;
-    let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
-    let user_wrapper_token_data = spl_token::state::Account::unpack(&d_stripped).unwrap();
-    drop(d);
+    let user_wrapper_token_account_data = user_wrapper_token_account.try_borrow_data()?;
+    let (user_wrapper_token_account_data_stripped, _) = user_wrapper_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_wrapper_token_data = spl_token::state::Account::unpack(&user_wrapper_token_account_data_stripped).unwrap();
+    drop(user_wrapper_token_account_data);
     assert_with_msg(
         &user_wrapper_token_data.owner == user_authority.key,
         TokenWrapperError::UnexpectedUserTokenAccountOwner,
         "User does not own the token account for the wrapper token",
     )?;
 
-    let d = reserve_token_2022_token_account.try_borrow_data()?;
-    let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
-    let reserve_token_2022_data = spl_token_2022::state::Account::unpack(&d_stripped).unwrap();
-    drop(d);
+    let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
+    let (reserve_token_2022_token_account_data_stripped, _) = reserve_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let reserve_token_2022_data = spl_token_2022::state::Account::unpack(&reserve_token_2022_token_account_data_stripped).unwrap();
+    drop(reserve_token_2022_token_account_data);
     assert_with_msg(
         &reserve_token_2022_data.owner == reserve_authority.key,
         TokenWrapperError::UnexpectedReserveTokenAccountOwner,
@@ -394,8 +393,6 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    // TODO: Validate if the token accounts are associated token accounts
-
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
     assert_is_account_initialized(wrapper_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
@@ -421,30 +418,30 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         "The account is not initialized, expected to be initialized",
     )?;
 
-    let d = user_token_2022_token_account.try_borrow_data()?;
-    let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
-    let user_token_2022_data = spl_token_2022::state::Account::unpack(&d_stripped).unwrap();
-    drop(d);
+    let user_token_2022_token_account_data = user_token_2022_token_account.try_borrow_data()?;
+    let (user_token_2022_token_account_data_stripped, _) = user_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_token_2022_data = spl_token_2022::state::Account::unpack(&user_token_2022_token_account_data_stripped).unwrap();
+    drop(user_token_2022_token_account_data);
     assert_with_msg(
         &user_token_2022_data.owner == user_authority.key,
         TokenWrapperError::UnexpectedUserTokenAccountOwner,
         "User does not own the token account for this Token 2022 token",
     )?;
 
-    let d = user_wrapper_token_account.try_borrow_data()?;
-    let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
-    let user_wrapper_token_data = spl_token::state::Account::unpack(&d_stripped).unwrap();
-    drop(d);
+    let user_wrapper_token_account_data = user_wrapper_token_account.try_borrow_data()?;
+    let (user_wrapper_token_account_data_stripped, _) = user_wrapper_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_wrapper_token_data = spl_token::state::Account::unpack(&user_wrapper_token_account_data_stripped).unwrap();
+    drop(user_wrapper_token_account_data);
     assert_with_msg(
         &user_wrapper_token_data.owner == user_authority.key,
         TokenWrapperError::UnexpectedUserTokenAccountOwner,
         "User does not own the token account for the wrapper token",
     )?;
 
-    let d = reserve_token_2022_token_account.try_borrow_data()?;
-    let (d_stripped, _) = d.split_at(spl_token::state::Account::LEN);
-    let reserve_token_2022_data = spl_token_2022::state::Account::unpack(&d_stripped).unwrap();
-    drop(d);
+    let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
+    let (reserve_token_2022_token_account_data_stripped, _) = reserve_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let reserve_token_2022_data = spl_token_2022::state::Account::unpack(&reserve_token_2022_token_account_data_stripped).unwrap();
+    drop(reserve_token_2022_token_account_data);
     assert_with_msg(
         &reserve_token_2022_data.owner == reserve_authority.key,
         TokenWrapperError::UnexpectedReserveTokenAccountOwner,
