@@ -1,6 +1,4 @@
-use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::rent::Rent;
-use solana_program::system_instruction::SystemInstruction;
 use solana_program::sysvar::Sysvar;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -11,6 +9,7 @@ use solana_program::{
     program_pack::Pack,
     pubkey::Pubkey,
 };
+use solana_program::system_instruction;
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
@@ -110,18 +109,12 @@ pub fn process_initialize_wrapper_token(
     let rent = Rent::get().unwrap();
     let mint_lamports = rent.minimum_balance(mint_data_length as usize);
 
-    // TODO - use Instruction::new_with_borsh
-    let create_mint_account_ix = Instruction::new_with_bincode(
-        *system_program.key,
-        &SystemInstruction::CreateAccount {
-            lamports: mint_lamports,
-            space: mint_data_length,
-            owner: spl_token::id(),
-        },
-        vec![
-            AccountMeta::new(*payer.key, true),
-            AccountMeta::new(*wrapper_token_mint.key, true),
-        ],
+    let create_mint_account_ix = system_instruction::create_account(
+        payer.key, 
+        wrapper_token_mint.key, 
+        mint_lamports, 
+        mint_data_length, 
+        &spl_token::id()
     );
 
     invoke_signed(
@@ -169,17 +162,12 @@ pub fn process_initialize_wrapper_token(
     let rent = Rent::get().unwrap();
     let token_account_lamports = rent.minimum_balance(token_account_data_length as usize);
 
-    let create_reserve_token_account_ix = Instruction::new_with_bincode(
-        *system_program.key,
-        &SystemInstruction::CreateAccount {
-            lamports: token_account_lamports,
-            space: token_account_data_length,
-            owner: spl_token_2022::id(),
-        },
-        vec![
-            AccountMeta::new(*payer.key, true),
-            AccountMeta::new(*reserve_token_2022_token_account.key, true),
-        ],
+    let create_reserve_token_account_ix = system_instruction::create_account(
+        payer.key, 
+        reserve_token_2022_token_account.key, 
+        token_account_lamports, 
+        token_account_data_length, 
+        &spl_token_2022::id()
     );
 
     invoke_signed(
