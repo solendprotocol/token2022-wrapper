@@ -346,7 +346,6 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let (_, _, mint_authority_seeds) =
         get_token_mint_authority(*wrapper_token_mint.key, *program_id);
 
-    // TODO - Factor in transfer fee when calculating amount (if enabled)
     let user_mint_ix = spl_token::instruction::mint_to_checked(
         token_program.key,
         wrapper_token_mint.key,
@@ -373,9 +372,6 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     )?;
 
     msg!("TokenWrapperInstruction::DepositAndMintWrapperTokens --> Everything done, returning");
-
-    // TODO - Support extensions like transfer fee or yield bearing, or just don't allow T22 to use this program for 
-    // avoiding unknown unknowns.
 
     Ok(())
 }

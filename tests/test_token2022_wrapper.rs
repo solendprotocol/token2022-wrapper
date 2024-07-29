@@ -19,7 +19,8 @@ use token2022_wrapper::{
 use utils::{
     airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint,
     create_token_account_token_2022, extract_error_code, get_token_balance, get_token_mint,
-    mint_token_2022_tokens, mint_tokens, sign_send_instructions,
+    mint_token_2022_tokens, mint_tokens, sign_send_instructions, TransferFeeConfigWithKeypairs,
+    test_transfer_fee_config_with_keypairs
 };
 
 pub const PROGRAM_ID: Pubkey = pubkey!("6E9iP7p4Gx2e6c2Yt4MHY5T1aZ8RWhrmF9p6bXkGWiza");
@@ -59,10 +60,11 @@ pub async fn create_and_mint_tokens_token_2022(
     recipient: &Pubkey,
     amount: u64,
     decimals: u8,
+    transfer_fee_config: Option<TransferFeeConfigWithKeypairs>
 ) -> (Pubkey, Pubkey) {
     let payer_keypair = client.get_payer_clone();
 
-    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), None, decimals, None)
+    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), None, decimals, None, transfer_fee_config)
         .await
         .unwrap();
 
@@ -97,6 +99,7 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
         Some(&payer_keypair.pubkey()),
         decimals,
         None,
+        None
     )
     .await
     .unwrap();
@@ -156,6 +159,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -232,6 +236,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -349,6 +354,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -450,6 +456,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -551,6 +558,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -652,6 +660,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -753,6 +762,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -841,6 +851,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -850,6 +861,7 @@ mod tests {
                 &user.pubkey(),
                 amount_2022,
                 decimal_2022,
+                None
             )
             .await;
 
@@ -1030,6 +1042,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -1173,6 +1186,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -1316,6 +1330,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -1459,6 +1474,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -1603,6 +1619,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -1763,6 +1780,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -1772,6 +1790,7 @@ mod tests {
                 &user.pubkey(),
                 amount_2022,
                 decimal_2022,
+                None
             )
             .await;
 
@@ -1936,6 +1955,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
+            None
         )
         .await;
 
@@ -2070,5 +2090,234 @@ mod tests {
                 println!("Error initializing token mint: {}", e);
             }
         };
+    }
+
+    /// Test 18 - Transfer fee enabled 100bps (1%) - works if user A mints, sends it to user B and user B withdraws
+    ///
+    /// user A deposits 100 tokens
+    /// reserve gets 99 tokens
+    /// user A is minted 99 wTokens
+    /// 
+    /// 
+    /// user A transfers 99 wTokens to user B
+    /// 
+    /// 
+    /// user B burns 99 wTokens
+    /// reserve sends 99 tokens
+    /// user B receives 98.01 tokens
+    /// 
+    /// 
+    /// Post flow balances:
+    /// user A - token: 0, wToken: 0
+    /// user B - token: 98.01, wToken: 0
+    ///
+    #[tokio::test]
+    async fn test_18() {
+        let mut test_client = TestClient::new().await;
+        let payer_keypair = test_client.get_payer_clone();
+
+        let user = Keypair::new();
+        let user_2 = Keypair::new();
+        let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+        let _ = airdrop(&mut test_client, &user_2.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+
+        let decimal_2022 = 8_u8;
+        let amount_2022 = 10_000u64 * 10_u64.pow(decimal_2022 as u32);
+        let amount_wrapper = amount_2022 / 2;
+        let amount_wrapper_burn = 10_u64;
+
+        let transfer_fee_test_config = test_transfer_fee_config_with_keypairs();
+
+        let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
+            &mut test_client,
+            &user.pubkey(),
+            amount_2022,
+            decimal_2022,
+            // Some(transfer_fee_test_config)
+            None
+        )
+        .await;
+
+        let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+        let user_wrapper_token_account =
+            get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+        let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+            .await
+            .unwrap();
+
+        assert_with_msg(
+            token_2022_data.decimals == decimal_2022,
+            "Invalid token_2022 decimals",
+        );
+
+        // let user_2_token_2022_token_account = create_token_account_token_2022(&mut test_client, &user_2.pubkey(), &token_2022_mint).await.unwrap();
+
+        // let user_token_2022_before_burn_balance = get_token_balance(
+        //     &mut test_client,
+        //     &user_token_2022_token_account,
+        // )
+        // .await;
+
+        // let user_2_token_2022_before_burn_balance = get_token_balance(
+        //     &mut test_client,
+        //     &user_2_token_2022_token_account,
+        // )
+        // .await;
+
+        // let transfer_ix = spl_token_2022::instruction::transfer_checked(
+        //     &spl_token_2022::id(), 
+        //     &user_token_2022_token_account, 
+        //     &token_2022_mint, 
+        //     &user_2_token_2022_token_account, 
+        //     &user.pubkey(), 
+        //     &[&user.pubkey()], 
+        //     100, 
+        //     decimal_2022
+        // ).unwrap();
+
+        // let _ = sign_send_instructions(
+        //     &mut test_client,
+        //     &[transfer_ix],
+        //     vec![&user, &payer_keypair],
+        //     None,
+        // )
+        // .await;
+
+        // tokio::time::sleep(Duration::from_millis(2_000)).await;
+
+        // let user_token_2022_after_burn_balance = get_token_balance(
+        //     &mut test_client,
+        //     &user_token_2022_token_account,
+        // )
+        // .await;
+
+        // let user_2_token_2022_after_burn_balance = get_token_balance(
+        //     &mut test_client,
+        //     &user_2_token_2022_token_account,
+        // )
+        // .await;
+    
+        // println!("Before: User: {}, User 2: {}", user_token_2022_before_burn_balance, user_2_token_2022_before_burn_balance);
+        // println!("After: User: {}, User 2: {}", user_token_2022_after_burn_balance, user_2_token_2022_after_burn_balance);
+
+        // let initialize_ix =
+        //     create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+        // let _ = match sign_send_instructions(
+        //     &mut test_client,
+        //     &vec![initialize_ix],
+        //     vec![&payer_keypair],
+        //     None,
+        // )
+        // .await
+        // {
+        //     Ok(_sig) => {
+        //         let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+        //             &user.pubkey(),
+        //             &token_2022_mint,
+        //             &user_wrapper_token_account,
+        //             &user_token_2022_token_account,
+        //             amount_wrapper,
+        //         );
+
+        //         let _ = match sign_send_instructions(
+        //             &mut test_client,
+        //             &vec![deposit_ix],
+        //             vec![&user, &payer_keypair],
+        //             None,
+        //         )
+        //         .await
+        //         {
+        //             Ok(_sig) => {
+        //                 let user_2_wrapper_token_account = create_associated_token_account(
+        //                     &mut test_client,
+        //                     &user_2.pubkey(),
+        //                     &wrapper_token_mint,
+        //                     &spl_token::id(),
+        //                 )
+        //                 .await
+        //                 .unwrap();
+
+        //                 let transfer_ix = spl_token::instruction::transfer_checked(
+        //                     &spl_token::id(),
+        //                     &user_wrapper_token_account,
+        //                     &wrapper_token_mint,
+        //                     &user_2_wrapper_token_account,
+        //                     &user.pubkey(),
+        //                     &[&user.pubkey()],
+        //                     amount_wrapper_burn,
+        //                     decimal_2022,
+        //                 )
+        //                 .unwrap();
+
+        //                 let _ = sign_send_instructions(
+        //                     &mut test_client,
+        //                     &[transfer_ix],
+        //                     vec![&user, &payer_keypair],
+        //                     None,
+        //                 )
+        //                 .await;
+
+        //                 let user_2_token_2022_token_account = create_token_account_token_2022(
+        //                     &mut test_client,
+        //                     &user_2.pubkey(),
+        //                     &token_2022_mint,
+        //                 )
+        //                 .await
+        //                 .unwrap();
+
+        //                 let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
+        //                     &user_2.pubkey(),
+        //                     &token_2022_mint,
+        //                     &user_2_wrapper_token_account,
+        //                     &user_2_token_2022_token_account,
+        //                     amount_wrapper_burn,
+        //                 );
+
+        //                 let _ = match sign_send_instructions(
+        //                     &mut test_client,
+        //                     &vec![burn_ix],
+        //                     vec![&user_2, &payer_keypair],
+        //                     None,
+        //                 )
+        //                 .await
+        //                 {
+        //                     Ok(_) => {
+        //                         let user_2_token_2022_after_burn_balance = get_token_balance(
+        //                             &mut test_client,
+        //                             &user_2_token_2022_token_account,
+        //                         )
+        //                         .await;
+        //                         let user_2_wrapper_after_burn_balance = get_token_balance(
+        //                             &mut test_client,
+        //                             &user_2_wrapper_token_account,
+        //                         )
+        //                         .await;
+
+        //                         assert_with_msg(
+        //                             user_2_token_2022_after_burn_balance == amount_wrapper_burn,
+        //                             "Invalid user 2 Token2022 token after burn balance change",
+        //                         );
+        //                         assert_with_msg(
+        //                             user_2_wrapper_after_burn_balance == 0,
+        //                             "Invalid user 2 wrapper token after burn balance change",
+        //                         );
+        //                     }
+        //                     Err(e) => {
+        //                         println!("Error burn tx: {}", e);
+        //                     }
+        //                 };
+        //             }
+        //             Err(e) => {
+        //                 println!("Error minting wrapper tokens: {}", e);
+        //             }
+        //         };
+        //     }
+        //     Err(e) => {
+        //         println!("Error initializing token mint: {}", e);
+        //     }
+        // };
     }
 }

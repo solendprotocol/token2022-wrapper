@@ -6,6 +6,13 @@ use solana_sdk::signature::{Signature, Signer};
 use solana_sdk::transaction::Transaction;
 use solana_sdk::{account::Account, rent::Rent, signature::Keypair, system_instruction};
 use spl_token::state::Mint;
+use spl_token_2022::{
+    state::Mint as Token2022Mint,
+    extension::ExtensionType
+};
+use spl_token_client::token::ExtensionInitializationParams;
+
+use super::TransferFeeConfigWithKeypairs;
 
 pub async fn sign_send_instructions(
     client: &mut TestClient,
@@ -310,17 +317,47 @@ pub async fn create_token_2022_mint(
     freeze_authority: Option<&Pubkey>,
     decimals: u8,
     mint: Option<Keypair>,
+    transfer_fee_config: Option<TransferFeeConfigWithKeypairs>,
 ) -> TransactionResult<Pubkey> {
     let mint = mint.unwrap_or_else(Keypair::new);
 
-    let ixs = vec![
+    let mut extension_params = vec![];
+
+    if transfer_fee_config.is_some() {
+        let config = transfer_fee_config.unwrap();
+
+        extension_params.push(
+            ExtensionInitializationParams::TransferFeeConfig { 
+                transfer_fee_config_authority: Some(config.transfer_fee_config_authority.pubkey()),
+                withdraw_withheld_authority: Some(config.withdraw_withheld_authority.pubkey()),
+                transfer_fee_basis_points: config.transfer_fee_config.newer_transfer_fee.transfer_fee_basis_points.into(),
+                maximum_fee: config.transfer_fee_config.newer_transfer_fee.maximum_fee.into()
+            }
+        );
+    }
+
+    let extension_types = extension_params
+        .iter()
+        .map(|e| e.extension())
+        .collect::<Vec<_>>();
+    let space = ExtensionType::try_calculate_account_len::<Token2022Mint>(&extension_types).unwrap();
+    println!("Computed space: {}", space);
+
+    let mut ixs = vec![
         system_instruction::create_account(
             &client.payer.pubkey(),
             &mint.pubkey(),
-            rent_exempt(Mint::LEN),
-            Mint::LEN as u64,
+            rent_exempt(space),
+            space as u64,
             &spl_token_2022::id(),
-        ),
+        )
+    ];
+
+    for extension in extension_params {
+        ixs.push(extension.instruction(&spl_token_2022::id(), &mint.pubkey()).unwrap());
+    }
+
+    ixs.push(
         spl_token_2022::instruction::initialize_mint2(
             &spl_token_2022::id(),
             &mint.pubkey(),
@@ -328,8 +365,8 @@ pub async fn create_token_2022_mint(
             freeze_authority,
             decimals,
         )
-        .unwrap(),
-    ];
+        .unwrap()
+    );
 
     let client_keypair = client.get_payer_clone();
 
