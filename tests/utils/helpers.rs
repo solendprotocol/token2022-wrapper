@@ -45,13 +45,6 @@ pub async fn get_account(client: &mut TestClient, pubkey: &Pubkey) -> Account {
     acc.unwrap_or_default()
 }
 
-
-
-
-
-
-
-
 pub async fn airdrop(
     client: &mut TestClient,
     receiver: &Pubkey,
@@ -84,12 +77,6 @@ pub async fn airdrop(
 pub fn rent_exempt(size: usize) -> u64 {
     Rent::default().minimum_balance(size) as u64
 }
-
-
-
-
-
-
 
 pub fn assert_with_msg(v: bool, msg: &str) {
     if !v {

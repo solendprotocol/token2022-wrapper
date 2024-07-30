@@ -1,4 +1,5 @@
 use solana_program::rent::Rent;
+use solana_program::system_instruction;
 use solana_program::sysvar::Sysvar;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -9,7 +10,6 @@ use solana_program::{
     program_pack::Pack,
     pubkey::Pubkey,
 };
-use solana_program::system_instruction;
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::{ExtensionType, PodStateWithExtensionsMut};
@@ -76,7 +76,8 @@ pub fn process_initialize_wrapper_token(
     let (freeze_authority, _, _) = get_token_freeze_authority(*wrapper_token_mint.key, *program_id);
 
     let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
-    let token_2022_mint_data = PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
+    let token_2022_mint_data =
+        PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data.base.decimals;
     drop(unwrapped_token_2022_mint_data);
 
@@ -112,11 +113,11 @@ pub fn process_initialize_wrapper_token(
     let mint_lamports = rent.minimum_balance(mint_data_length as usize);
 
     let create_mint_account_ix = system_instruction::create_account(
-        payer.key, 
-        wrapper_token_mint.key, 
-        mint_lamports, 
-        mint_data_length, 
-        &spl_token::id()
+        payer.key,
+        wrapper_token_mint.key,
+        mint_lamports,
+        mint_data_length,
+        &spl_token::id(),
     );
 
     invoke_signed(
@@ -165,11 +166,11 @@ pub fn process_initialize_wrapper_token(
     let token_account_lamports = rent.minimum_balance(token_account_data_length as usize);
 
     let create_reserve_token_account_ix = system_instruction::create_account(
-        payer.key, 
-        reserve_token_2022_token_account.key, 
-        token_account_lamports, 
-        token_account_data_length, 
-        &spl_token_2022::id()
+        payer.key,
+        reserve_token_2022_token_account.key,
+        token_account_lamports,
+        token_account_data_length,
+        &spl_token_2022::id(),
     );
 
     invoke_signed(
@@ -261,7 +262,8 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     assert_rent(*rent_sysvar.key)?;
 
     let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
-    let token_2022_mint_data = PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
+    let token_2022_mint_data =
+        PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data.base.decimals;
     drop(unwrapped_token_2022_mint_data);
 
@@ -288,8 +290,11 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     }
 
     let user_token_2022_token_account_data = user_token_2022_token_account.try_borrow_data()?;
-    let (user_token_2022_token_account_data_stripped, _) = user_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
-    let user_token_2022_data = spl_token_2022::state::Account::unpack(&user_token_2022_token_account_data_stripped).unwrap();
+    let (user_token_2022_token_account_data_stripped, _) =
+        user_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_token_2022_data =
+        spl_token_2022::state::Account::unpack(&user_token_2022_token_account_data_stripped)
+            .unwrap();
     drop(user_token_2022_token_account_data);
     assert_with_msg(
         &user_token_2022_data.owner == user_authority.key,
@@ -298,8 +303,10 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     )?;
 
     let user_wrapper_token_account_data = user_wrapper_token_account.try_borrow_data()?;
-    let (user_wrapper_token_account_data_stripped, _) = user_wrapper_token_account_data.split_at(spl_token::state::Account::LEN);
-    let user_wrapper_token_data = spl_token::state::Account::unpack(&user_wrapper_token_account_data_stripped).unwrap();
+    let (user_wrapper_token_account_data_stripped, _) =
+        user_wrapper_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_wrapper_token_data =
+        spl_token::state::Account::unpack(&user_wrapper_token_account_data_stripped).unwrap();
     drop(user_wrapper_token_account_data);
     assert_with_msg(
         &user_wrapper_token_data.owner == user_authority.key,
@@ -307,9 +314,13 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         "User does not own the token account for the wrapper token",
     )?;
 
-    let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
-    let (reserve_token_2022_token_account_data_stripped, _) = reserve_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
-    let reserve_token_2022_data = spl_token_2022::state::Account::unpack(&reserve_token_2022_token_account_data_stripped).unwrap();
+    let reserve_token_2022_token_account_data =
+        reserve_token_2022_token_account.try_borrow_data()?;
+    let (reserve_token_2022_token_account_data_stripped, _) =
+        reserve_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let reserve_token_2022_data =
+        spl_token_2022::state::Account::unpack(&reserve_token_2022_token_account_data_stripped)
+            .unwrap();
     drop(reserve_token_2022_token_account_data);
     assert_with_msg(
         &reserve_token_2022_data.owner == reserve_authority.key,
@@ -342,8 +353,10 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     )?;
 
     let reserve_token_account_data_copy = reserve_token_2022_token_account.try_borrow_data()?;
-    let (reserve_token_account_data_copy_stripped, _) = reserve_token_account_data_copy.split_at(spl_token::state::Account::LEN);
-    let post_transfer_balance = spl_token_2022::state::Account::unpack(&reserve_token_account_data_copy_stripped)?.amount;
+    let (reserve_token_account_data_copy_stripped, _) =
+        reserve_token_account_data_copy.split_at(spl_token::state::Account::LEN);
+    let post_transfer_balance =
+        spl_token_2022::state::Account::unpack(&reserve_token_account_data_copy_stripped)?.amount;
     drop(reserve_token_account_data_copy);
 
     let (_, _, mint_authority_seeds) =
@@ -415,7 +428,8 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     assert_rent(*rent_sysvar.key)?;
 
     let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
-    let token_2022_mint_data = PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
+    let token_2022_mint_data =
+        PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data.base.decimals;
     drop(unwrapped_token_2022_mint_data);
 
@@ -426,8 +440,11 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     )?;
 
     let user_token_2022_token_account_data = user_token_2022_token_account.try_borrow_data()?;
-    let (user_token_2022_token_account_data_stripped, _) = user_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
-    let user_token_2022_data = spl_token_2022::state::Account::unpack(&user_token_2022_token_account_data_stripped).unwrap();
+    let (user_token_2022_token_account_data_stripped, _) =
+        user_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_token_2022_data =
+        spl_token_2022::state::Account::unpack(&user_token_2022_token_account_data_stripped)
+            .unwrap();
     drop(user_token_2022_token_account_data);
     assert_with_msg(
         &user_token_2022_data.owner == user_authority.key,
@@ -436,8 +453,10 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     )?;
 
     let user_wrapper_token_account_data = user_wrapper_token_account.try_borrow_data()?;
-    let (user_wrapper_token_account_data_stripped, _) = user_wrapper_token_account_data.split_at(spl_token::state::Account::LEN);
-    let user_wrapper_token_data = spl_token::state::Account::unpack(&user_wrapper_token_account_data_stripped).unwrap();
+    let (user_wrapper_token_account_data_stripped, _) =
+        user_wrapper_token_account_data.split_at(spl_token::state::Account::LEN);
+    let user_wrapper_token_data =
+        spl_token::state::Account::unpack(&user_wrapper_token_account_data_stripped).unwrap();
     drop(user_wrapper_token_account_data);
     assert_with_msg(
         &user_wrapper_token_data.owner == user_authority.key,
@@ -445,9 +464,13 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         "User does not own the token account for the wrapper token",
     )?;
 
-    let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
-    let (reserve_token_2022_token_account_data_stripped, _) = reserve_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
-    let reserve_token_2022_data = spl_token_2022::state::Account::unpack(&reserve_token_2022_token_account_data_stripped).unwrap();
+    let reserve_token_2022_token_account_data =
+        reserve_token_2022_token_account.try_borrow_data()?;
+    let (reserve_token_2022_token_account_data_stripped, _) =
+        reserve_token_2022_token_account_data.split_at(spl_token::state::Account::LEN);
+    let reserve_token_2022_data =
+        spl_token_2022::state::Account::unpack(&reserve_token_2022_token_account_data_stripped)
+            .unwrap();
     drop(reserve_token_2022_token_account_data);
     assert_with_msg(
         &reserve_token_2022_data.owner == reserve_authority.key,

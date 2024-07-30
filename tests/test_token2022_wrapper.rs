@@ -18,9 +18,9 @@ use token2022_wrapper::{
 };
 use utils::{
     airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint,
-    create_token_account_token_2022, extract_error_code, get_token_balance, get_token_balance_2022, get_token_mint,
-    mint_token_2022_tokens, mint_tokens, sign_send_instructions, TransferFeeConfigWithKeypairs,
-    test_transfer_fee_config_with_keypairs
+    create_token_account_token_2022, extract_error_code, get_token_balance, get_token_balance_2022,
+    get_token_mint, mint_token_2022_tokens, mint_tokens, sign_send_instructions,
+    test_transfer_fee_config_with_keypairs, TransferFeeConfigWithKeypairs,
 };
 
 pub const PROGRAM_ID: Pubkey = pubkey!("6E9iP7p4Gx2e6c2Yt4MHY5T1aZ8RWhrmF9p6bXkGWiza");
@@ -60,13 +60,20 @@ pub async fn create_and_mint_tokens_token_2022(
     recipient: &Pubkey,
     amount: u64,
     decimals: u8,
-    transfer_fee_config: Option<&TransferFeeConfigWithKeypairs>
+    transfer_fee_config: Option<&TransferFeeConfigWithKeypairs>,
 ) -> (Pubkey, Pubkey) {
     let payer_keypair = client.get_payer_clone();
 
-    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), Some(&payer_keypair.pubkey()), decimals, None, transfer_fee_config)
-        .await
-        .unwrap();
+    let token_mint = create_token_2022_mint(
+        client,
+        &payer_keypair.pubkey(),
+        Some(&payer_keypair.pubkey()),
+        decimals,
+        None,
+        transfer_fee_config,
+    )
+    .await
+    .unwrap();
 
     let token_account = create_token_account_token_2022(client, &recipient, &token_mint)
         .await
@@ -99,7 +106,7 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
         Some(&payer_keypair.pubkey()),
         decimals,
         None,
-        None
+        None,
     )
     .await
     .unwrap();
@@ -159,7 +166,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -236,7 +243,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -354,7 +361,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -456,7 +463,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -558,7 +565,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -660,7 +667,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -762,7 +769,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
         let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
@@ -851,7 +858,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -861,7 +868,7 @@ mod tests {
                 &user.pubkey(),
                 amount_2022,
                 decimal_2022,
-                None
+                None,
             )
             .await;
 
@@ -1042,7 +1049,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -1186,7 +1193,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -1330,7 +1337,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -1474,7 +1481,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -1619,7 +1626,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -1780,7 +1787,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -1790,7 +1797,7 @@ mod tests {
                 &user.pubkey(),
                 amount_2022,
                 decimal_2022,
-                None
+                None,
             )
             .await;
 
@@ -1955,7 +1962,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            None
+            None,
         )
         .await;
 
@@ -2097,16 +2104,16 @@ mod tests {
     /// user A deposits 100 tokens
     /// reserve gets 99 tokens
     /// user A is minted 99 wTokens
-    /// 
-    /// 
+    ///
+    ///
     /// user A transfers 99 wTokens to user B
-    /// 
-    /// 
+    ///
+    ///
     /// user B burns 99 wTokens
     /// reserve sends 99 tokens
     /// user B receives 98.01 tokens
-    /// 
-    /// 
+    ///
+    ///
     /// Post flow balances:
     /// user A - token: 0, wToken: 0
     /// user B - token: 98.01, wToken: 0
@@ -2133,8 +2140,7 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            Some(&transfer_fee_test_config)
-            // None
+            Some(&transfer_fee_test_config), // None
         )
         .await;
 
@@ -2181,11 +2187,8 @@ mod tests {
                 .await
                 {
                     Ok(_sig) => {
-                        let user_wrapper_token_after_deposit_balance = get_token_balance(
-                            &mut test_client,
-                            &user_wrapper_token_account,
-                        )
-                        .await;
+                        let user_wrapper_token_after_deposit_balance =
+                            get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
                         let user_token_2022_after_deposit_balance = get_token_balance_2022(
                             &mut test_client,
@@ -2202,7 +2205,7 @@ mod tests {
                             user_wrapper_token_after_deposit_balance == amount_wrapper_burn,
                             "Invalid user wrapper token after deposit balance change",
                         );
-                        
+
                         let user_2_wrapper_token_account = create_associated_token_account(
                             &mut test_client,
                             &user_2.pubkey(),
@@ -2232,17 +2235,12 @@ mod tests {
                         )
                         .await;
 
-                        let user_wrapper_token_after_transfer_balance = get_token_balance(
-                            &mut test_client,
-                            &user_wrapper_token_account,
-                        )
-                        .await;
+                        let user_wrapper_token_after_transfer_balance =
+                            get_token_balance(&mut test_client, &user_wrapper_token_account).await;
 
-                        let user_2_wrapper_token_after_transfer_balance = get_token_balance(
-                            &mut test_client,
-                            &user_2_wrapper_token_account,
-                        )
-                        .await;
+                        let user_2_wrapper_token_after_transfer_balance =
+                            get_token_balance(&mut test_client, &user_2_wrapper_token_account)
+                                .await;
 
                         assert_with_msg(
                             user_wrapper_token_after_transfer_balance == 0,
@@ -2284,13 +2282,13 @@ mod tests {
                                     &user_2_token_2022_token_account,
                                 )
                                 .await;
-                
+
                                 let user_2_wrapper_token_after_burn_balance = get_token_balance(
                                     &mut test_client,
                                     &user_2_wrapper_token_account,
                                 )
                                 .await;
-        
+
                                 assert_with_msg(
                                     user_2_token_2022_after_burn_balance == 98,
                                     "Invalid user 2 Token2022 token after burn balance change",

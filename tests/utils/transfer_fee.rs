@@ -15,7 +15,7 @@ pub fn test_transfer_fee() -> TransferFee {
 pub struct TransferFeeConfigWithKeypairs {
     pub transfer_fee_config: TransferFeeConfig,
     pub transfer_fee_config_authority: Keypair,
-    pub withdraw_withheld_authority: Keypair
+    pub withdraw_withheld_authority: Keypair,
 }
 
 pub fn test_transfer_fee_config_with_keypairs() -> TransferFeeConfigWithKeypairs {
@@ -24,16 +24,20 @@ pub fn test_transfer_fee_config_with_keypairs() -> TransferFeeConfigWithKeypairs
     let withdraw_withheld_authority = Keypair::new();
 
     let transfer_fee_config = TransferFeeConfig {
-        transfer_fee_config_authority: COption::Some(transfer_fee_config_authority.pubkey()).try_into().unwrap(),
-        withdraw_withheld_authority: COption::Some(withdraw_withheld_authority.pubkey()).try_into().unwrap(),
+        transfer_fee_config_authority: COption::Some(transfer_fee_config_authority.pubkey())
+            .try_into()
+            .unwrap(),
+        withdraw_withheld_authority: COption::Some(withdraw_withheld_authority.pubkey())
+            .try_into()
+            .unwrap(),
         withheld_amount: 0.into(),
         older_transfer_fee: transfer_fee,
-        newer_transfer_fee: transfer_fee
+        newer_transfer_fee: transfer_fee,
     };
-    
+
     TransferFeeConfigWithKeypairs {
         transfer_fee_config,
         transfer_fee_config_authority,
-        withdraw_withheld_authority
+        withdraw_withheld_authority,
     }
 }
