@@ -32,17 +32,15 @@ pub enum TokenWrapperInstruction {
     /// 0. `[signer]` User authority
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
-    /// 2. `[]` Mint authority for the wrapper token
-    ///     Must be a PDA with seeds ["mint_authority", Token2022 token mint]
-    /// 3. `[]` Token2022 token mint
-    /// 4. `[]` Wrapper token mint
-    /// 5. `[writable]` User's token account for the wrapper token
-    /// 6. `[writable]` User's token account for the Token2022 token
-    /// 7. `[writable]` Reserve's token account for the Token2022 token
-    /// 8. `[]` SPL Token program
-    /// 9. `[]` Token2022 program
-    /// 10. `[]` System program
-    /// 11. `[]` Associated token program
+    /// 2. `[]` Token2022 token mint
+    /// 3. `[]` Wrapper token mint
+    /// 4. `[writable]` User's token account for the wrapper token
+    /// 5. `[writable]` User's token account for the Token2022 token
+    /// 6. `[writable]` Reserve's token account for the Token2022 token
+    /// 7. `[]` SPL Token program
+    /// 8. `[]` Token2022 program
+    /// 9. `[]` System program
+    /// 10. `[]` Associated token program
     /// 11. `[]` Rent sysvar
     DepositAndMintWrapperTokens = 1,
 

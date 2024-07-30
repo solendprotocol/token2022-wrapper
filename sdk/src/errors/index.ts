@@ -274,52 +274,6 @@ createErrorFromNameLookup.set(
 )
 
 /**
- * UnexpectedMintAuthority: 'Unexpected mint authority'
- *
- * @category Errors
- * @category generated
- */
-export class UnexpectedMintAuthorityError extends Error {
-  readonly code: number = 0xb
-  readonly name: string = 'UnexpectedMintAuthority'
-  constructor() {
-    super('Unexpected mint authority')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedMintAuthorityError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(0xb, () => new UnexpectedMintAuthorityError())
-createErrorFromNameLookup.set(
-  'UnexpectedMintAuthority',
-  () => new UnexpectedMintAuthorityError()
-)
-
-/**
- * UnexpectedFreezeAuthority: 'Unexpected freeze authority'
- *
- * @category Errors
- * @category generated
- */
-export class UnexpectedFreezeAuthorityError extends Error {
-  readonly code: number = 0xc
-  readonly name: string = 'UnexpectedFreezeAuthority'
-  constructor() {
-    super('Unexpected freeze authority')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedFreezeAuthorityError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(0xc, () => new UnexpectedFreezeAuthorityError())
-createErrorFromNameLookup.set(
-  'UnexpectedFreezeAuthority',
-  () => new UnexpectedFreezeAuthorityError()
-)
-
-/**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
  * @category generated

@@ -1,5 +1,5 @@
 import * as web3 from "@solana/web3.js";
-import { FREEZE_AUTHORITY_SEED, MINT_AUTHORITY_SEED, PROGRAM_ID, RESERVE_AUTHORITY_SEED, RESERVE_AUTHORITY_TOKEN_ACCOUNT_SEED } from "../constants";
+import { PROGRAM_ID, RESERVE_AUTHORITY_SEED, RESERVE_AUTHORITY_TOKEN_ACCOUNT_SEED } from "../constants";
 import { WRAPPER_TOKEN_MINT_SEED } from "../constants";
 
 export const getWrapperTokenMint = (
@@ -45,32 +45,4 @@ export const getReserveAuthorityTokenAccount = (
     );
 
     return reserveAuthorityTokenAccount;
-}
-
-export const getMintAuthority = (
-    token2022Mint: web3.PublicKey
-): web3.PublicKey => {
-    const [mintAuthority, _] = web3.PublicKey.findProgramAddressSync(
-        [
-            MINT_AUTHORITY_SEED,
-            token2022Mint.toBuffer()
-        ],
-        PROGRAM_ID
-    );
-
-    return mintAuthority;
-}
-
-export const getFreezeAuthority = (
-    token2022Mint: web3.PublicKey
-): web3.PublicKey => {
-    const [freezeAuthority, _] = web3.PublicKey.findProgramAddressSync(
-        [
-            FREEZE_AUTHORITY_SEED,
-            token2022Mint.toBuffer()
-        ],
-        PROGRAM_ID
-    );
-
-    return freezeAuthority;
 }

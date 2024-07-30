@@ -1,7 +1,7 @@
 import * as web3 from "@solana/web3.js";
 import { TokenWrapperInstruction } from "../types";
 import { PROGRAM_ID, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, SYSTEM_PROGRAM_ID, RENT_SYSVAR, ASSOCIATED_TOKEN_PROGRAM_ID } from "../constants";
-import { getMintAuthority, getReserveAuthority, getReserveAuthorityTokenAccount, getWrapperTokenMint } from "utils";
+import { getReserveAuthority, getReserveAuthorityTokenAccount, getWrapperTokenMint } from "utils";
 import * as Layout from "../types/layout";
 import BN from "bn.js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
@@ -33,7 +33,6 @@ export const createDepositAndMintWrapperTokensInstruction = async (
     const wrapperTokenMint = getWrapperTokenMint(token2022Mint);
     const reserveAuthority = getReserveAuthority(token2022Mint);
     const reserveAuthorityTokenAccount = getReserveAuthorityTokenAccount(token2022Mint);
-    const mintAuthority = getMintAuthority(token2022Mint);
     const userWrapperTokenAccount = await getAssociatedTokenAddress(wrapperTokenMint, userAuthority, false);
 
     const keys = [
@@ -44,11 +43,6 @@ export const createDepositAndMintWrapperTokensInstruction = async (
         },
         {
             pubkey: reserveAuthority,
-            isSigner: false,
-            isWritable: false
-        },
-        {
-            pubkey: mintAuthority,
             isSigner: false,
             isWritable: false
         },

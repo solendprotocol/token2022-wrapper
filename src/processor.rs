@@ -19,11 +19,10 @@ use crate::{
     error::TokenWrapperError,
     instruction::TokenWrapperInstruction,
     utils::{
-        assert_is_account_initialized, assert_is_account_uninitialized, assert_mint_authority,
+        assert_is_account_initialized, assert_is_account_uninitialized,
         assert_rent, assert_reserve_authority, assert_reserve_authority_token_account,
         assert_system_program, assert_token_2022_program, assert_token_program, assert_with_msg,
-        assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account,
-        get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint,
+        assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account, get_wrapper_token_mint,
     },
 };
 
@@ -71,9 +70,6 @@ pub fn process_initialize_wrapper_token(
     let token_2022_program = next_account_info(accounts_info_iter)?;
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
-
-    let (mint_authority, _, _) = get_token_mint_authority(*wrapper_token_mint.key, *program_id);
-    let (freeze_authority, _, _) = get_token_freeze_authority(*wrapper_token_mint.key, *program_id);
 
     let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
     let token_2022_mint_data =
@@ -137,8 +133,8 @@ pub fn process_initialize_wrapper_token(
     let init_mint_ix = spl_token::instruction::initialize_mint(
         token_program.key,
         wrapper_token_mint.key,
-        &mint_authority,
-        Some(&freeze_authority),
+        &reserve_authority.key,
+        Some(&reserve_authority.key),
         token_2022_decimals,
     )?;
 
@@ -233,7 +229,6 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let accounts_info_iter = &mut accounts.iter();
     let user_authority = next_account_info(accounts_info_iter)?;
     let reserve_authority = next_account_info(accounts_info_iter)?;
-    let mint_authority = next_account_info(accounts_info_iter)?;
     let token_2022_mint = next_account_info(accounts_info_iter)?;
     let wrapper_token_mint = next_account_info(accounts_info_iter)?;
     let user_wrapper_token_account = next_account_info(accounts_info_iter)?;
@@ -245,6 +240,8 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let associated_token_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
+    msg!("reserve_auth:{:?}", reserve_authority);
+
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
     assert_is_account_initialized(wrapper_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
@@ -254,7 +251,6 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         *program_id,
         *reserve_token_2022_token_account.key,
     )?;
-    assert_mint_authority(*wrapper_token_mint.key, *program_id, *mint_authority.key)?;
 
     assert_token_program(*token_program.key)?;
     assert_token_2022_program(*token_2022_program.key)?;
@@ -359,15 +355,15 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         spl_token_2022::state::Account::unpack(&reserve_token_account_data_copy_stripped)?.amount;
     drop(reserve_token_account_data_copy);
 
-    let (_, _, mint_authority_seeds) =
-        get_token_mint_authority(*wrapper_token_mint.key, *program_id);
+    let (_, _, reserve_authority_seeds) =
+        get_reserve_authority(*token_2022_mint.key, *program_id);
 
     let user_mint_ix = spl_token::instruction::mint_to_checked(
         token_program.key,
         wrapper_token_mint.key,
         user_wrapper_token_account.key,
-        mint_authority.key,
-        &[mint_authority.key],
+        reserve_authority.key,
+        &[reserve_authority.key],
         post_transfer_balance - pre_transfer_balance,
         token_2022_decimals,
     )?;
@@ -378,9 +374,9 @@ pub fn process_deposit_and_mint_wrapper_tokens(
             token_program.clone(),
             wrapper_token_mint.clone(),
             user_wrapper_token_account.clone(),
-            mint_authority.clone(),
+            reserve_authority.clone(),
         ],
-        &[mint_authority_seeds
+        &[reserve_authority_seeds
             .iter()
             .map(|seed| seed.as_slice())
             .collect::<Vec<&[u8]>>()

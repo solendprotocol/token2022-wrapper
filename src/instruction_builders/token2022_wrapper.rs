@@ -7,7 +7,7 @@ use solana_program::{
 use crate::{
     instruction::TokenWrapperInstruction,
     utils::{
-        get_reserve_authority, get_reserve_authority_token_account, get_token_mint_authority,
+        get_reserve_authority, get_reserve_authority_token_account,
         get_wrapper_token_mint,
     },
 };
@@ -47,7 +47,6 @@ pub fn create_deposit_and_mint_wrapper_tokens_instruction(
 ) -> Instruction {
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(*token_2022_mint, crate::id());
     let (reserve_authority, _, _) = get_reserve_authority(*token_2022_mint, crate::id());
-    let (mint_authority, _, _) = get_token_mint_authority(wrapper_token_mint, crate::id());
 
     let (reserve_token_2022_token_account, _, _) =
         get_reserve_authority_token_account(*token_2022_mint, reserve_authority, crate::id());
@@ -57,7 +56,6 @@ pub fn create_deposit_and_mint_wrapper_tokens_instruction(
         accounts: vec![
             AccountMeta::new(*user_authority, true),
             AccountMeta::new_readonly(reserve_authority, false),
-            AccountMeta::new_readonly(mint_authority, false),
             AccountMeta::new_readonly(*token_2022_mint, false),
             AccountMeta::new(wrapper_token_mint, false),
             AccountMeta::new(*user_wrapper_token_account, false),

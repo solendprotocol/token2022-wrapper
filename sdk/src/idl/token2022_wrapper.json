@@ -85,16 +85,6 @@
       "code": 10,
       "name": "UnexpectedReserveAuthority",
       "msg": "Unexpected reserve authority"
-    },
-    {
-      "code": 11,
-      "name": "UnexpectedMintAuthority",
-      "msg": "Unexpected mint authority"
-    },
-    {
-      "code": 12,
-      "name": "UnexpectedFreezeAuthority",
-      "msg": "Unexpected freeze authority"
     }
   ],
   "metadata": {

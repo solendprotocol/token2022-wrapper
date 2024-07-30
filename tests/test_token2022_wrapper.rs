@@ -14,7 +14,7 @@ use token2022_wrapper::{
         create_initialize_wrapper_token_instruction,
         create_withdraw_and_burn_wrapper_tokens_instruction,
     },
-    utils::{get_token_freeze_authority, get_token_mint_authority, get_wrapper_token_mint},
+    utils::get_wrapper_token_mint
 };
 use utils::{
     airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint,
@@ -145,6 +145,8 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
 
 mod tests {
 
+    use token2022_wrapper::utils::get_reserve_authority;
+
     use super::*;
 
     /// Test 1 - testing successful initialization of a wrapper token mint for a Token 2022 mint
@@ -193,9 +195,9 @@ mod tests {
             Ok(_sig) => {
                 let (wrapper_token, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
                 let (expected_mint_authority, _, _) =
-                    get_token_mint_authority(wrapper_token, PROGRAM_ID);
+                    get_reserve_authority(token_2022_mint, PROGRAM_ID);
                 let (expected_freeze_authority, _, _) =
-                    get_token_freeze_authority(wrapper_token, PROGRAM_ID);
+                    get_reserve_authority(token_2022_mint, PROGRAM_ID);
 
                 let wrapper_token_ac = get_token_mint(&mut test_client, &wrapper_token)
                     .await

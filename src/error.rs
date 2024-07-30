@@ -28,10 +28,6 @@ pub enum TokenWrapperError {
     UnexpectedReserveTokenAccount = 9,
     #[error("Unexpected reserve authority")]
     UnexpectedReserveAuthority = 10,
-    #[error("Unexpected mint authority")]
-    UnexpectedMintAuthority = 11,
-    #[error("Unexpected freeze authority")]
-    UnexpectedFreezeAuthority = 12,
 }
 
 impl From<TokenWrapperError> for ProgramError {

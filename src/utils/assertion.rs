@@ -6,8 +6,7 @@ use solana_program::{
 use crate::error::TokenWrapperError;
 
 use super::{
-    get_reserve_authority, get_reserve_authority_token_account, get_token_freeze_authority,
-    get_token_mint_authority, get_wrapper_token_mint,
+    get_reserve_authority, get_reserve_authority_token_account, get_wrapper_token_mint,
 };
 
 #[track_caller]
@@ -103,34 +102,6 @@ pub fn assert_reserve_authority_token_account(
         expected_reserve_authority_token_account == actual_reserve_authority_token_account,
         TokenWrapperError::UnexpectedReserveTokenAccount,
         "Invalid reserve authority token account passed",
-    )
-}
-
-pub fn assert_mint_authority(
-    token_mint: Pubkey,
-    program_id: Pubkey,
-    actual_mint_authority: Pubkey,
-) -> ProgramResult {
-    let (expected_mint_authority, _, _) = get_token_mint_authority(token_mint, program_id);
-
-    assert_with_msg(
-        expected_mint_authority == actual_mint_authority,
-        TokenWrapperError::UnexpectedMintAuthority,
-        "Invalid mint authority passed",
-    )
-}
-
-pub fn assert_freeze_authority(
-    token_mint: Pubkey,
-    program_id: Pubkey,
-    actual_freeze_authority: Pubkey,
-) -> ProgramResult {
-    let (expected_freeze_authority, _, _) = get_token_freeze_authority(token_mint, program_id);
-
-    assert_with_msg(
-        expected_freeze_authority == actual_freeze_authority,
-        TokenWrapperError::UnexpectedFreezeAuthority,
-        "Invalid freeze authority passed",
     )
 }
 
