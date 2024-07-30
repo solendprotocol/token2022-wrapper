@@ -18,7 +18,7 @@ use token2022_wrapper::{
 };
 use utils::{
     airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint,
-    create_token_account_token_2022, extract_error_code, get_token_balance, get_token_mint,
+    create_token_account_token_2022, extract_error_code, get_token_balance, get_token_balance_2022, get_token_mint,
     mint_token_2022_tokens, mint_tokens, sign_send_instructions, TransferFeeConfigWithKeypairs,
     test_transfer_fee_config_with_keypairs
 };
@@ -60,11 +60,11 @@ pub async fn create_and_mint_tokens_token_2022(
     recipient: &Pubkey,
     amount: u64,
     decimals: u8,
-    transfer_fee_config: Option<TransferFeeConfigWithKeypairs>
+    transfer_fee_config: Option<&TransferFeeConfigWithKeypairs>
 ) -> (Pubkey, Pubkey) {
     let payer_keypair = client.get_payer_clone();
 
-    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), None, decimals, None, transfer_fee_config)
+    let token_mint = create_token_2022_mint(client, &payer_keypair.pubkey(), Some(&payer_keypair.pubkey()), decimals, None, transfer_fee_config)
         .await
         .unwrap();
 
@@ -2122,9 +2122,9 @@ mod tests {
         let _ = airdrop(&mut test_client, &user_2.pubkey(), 5 * LAMPORTS_PER_SOL).await;
 
         let decimal_2022 = 8_u8;
-        let amount_2022 = 10_000u64 * 10_u64.pow(decimal_2022 as u32);
-        let amount_wrapper = amount_2022 / 2;
-        let amount_wrapper_burn = 10_u64;
+        let amount_2022 = 10_000u64;
+        let amount_wrapper = 100u64;
+        let amount_wrapper_burn = 99u64;
 
         let transfer_fee_test_config = test_transfer_fee_config_with_keypairs();
 
@@ -2133,8 +2133,8 @@ mod tests {
             &user.pubkey(),
             amount_2022,
             decimal_2022,
-            // Some(transfer_fee_test_config)
-            None
+            Some(&transfer_fee_test_config)
+            // None
         )
         .await;
 
@@ -2152,172 +2152,167 @@ mod tests {
             "Invalid token_2022 decimals",
         );
 
-        // let user_2_token_2022_token_account = create_token_account_token_2022(&mut test_client, &user_2.pubkey(), &token_2022_mint).await.unwrap();
+        let initialize_ix =
+            create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
 
-        // let user_token_2022_before_burn_balance = get_token_balance(
-        //     &mut test_client,
-        //     &user_token_2022_token_account,
-        // )
-        // .await;
+        let _ = match sign_send_instructions(
+            &mut test_client,
+            &vec![initialize_ix],
+            vec![&payer_keypair],
+            None,
+        )
+        .await
+        {
+            Ok(_sig) => {
+                let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                    &user.pubkey(),
+                    &token_2022_mint,
+                    &user_wrapper_token_account,
+                    &user_token_2022_token_account,
+                    amount_wrapper,
+                );
 
-        // let user_2_token_2022_before_burn_balance = get_token_balance(
-        //     &mut test_client,
-        //     &user_2_token_2022_token_account,
-        // )
-        // .await;
+                let _ = match sign_send_instructions(
+                    &mut test_client,
+                    &vec![deposit_ix],
+                    vec![&user, &payer_keypair],
+                    None,
+                )
+                .await
+                {
+                    Ok(_sig) => {
+                        let user_wrapper_token_after_deposit_balance = get_token_balance(
+                            &mut test_client,
+                            &user_wrapper_token_account,
+                        )
+                        .await;
 
-        // let transfer_ix = spl_token_2022::instruction::transfer_checked(
-        //     &spl_token_2022::id(), 
-        //     &user_token_2022_token_account, 
-        //     &token_2022_mint, 
-        //     &user_2_token_2022_token_account, 
-        //     &user.pubkey(), 
-        //     &[&user.pubkey()], 
-        //     100, 
-        //     decimal_2022
-        // ).unwrap();
+                        let user_token_2022_after_deposit_balance = get_token_balance_2022(
+                            &mut test_client,
+                            &user_token_2022_token_account,
+                        )
+                        .await;
 
-        // let _ = sign_send_instructions(
-        //     &mut test_client,
-        //     &[transfer_ix],
-        //     vec![&user, &payer_keypair],
-        //     None,
-        // )
-        // .await;
+                        assert_with_msg(
+                            user_token_2022_after_deposit_balance == amount_2022 - amount_wrapper,
+                            "Invalid user Token2022 token after deposit balance change",
+                        );
 
-        // tokio::time::sleep(Duration::from_millis(2_000)).await;
+                        assert_with_msg(
+                            user_wrapper_token_after_deposit_balance == amount_wrapper_burn,
+                            "Invalid user wrapper token after deposit balance change",
+                        );
+                        
+                        let user_2_wrapper_token_account = create_associated_token_account(
+                            &mut test_client,
+                            &user_2.pubkey(),
+                            &wrapper_token_mint,
+                            &spl_token::id(),
+                        )
+                        .await
+                        .unwrap();
 
-        // let user_token_2022_after_burn_balance = get_token_balance(
-        //     &mut test_client,
-        //     &user_token_2022_token_account,
-        // )
-        // .await;
+                        let transfer_ix = spl_token::instruction::transfer_checked(
+                            &spl_token::id(),
+                            &user_wrapper_token_account,
+                            &wrapper_token_mint,
+                            &user_2_wrapper_token_account,
+                            &user.pubkey(),
+                            &[&user.pubkey()],
+                            amount_wrapper_burn,
+                            decimal_2022,
+                        )
+                        .unwrap();
 
-        // let user_2_token_2022_after_burn_balance = get_token_balance(
-        //     &mut test_client,
-        //     &user_2_token_2022_token_account,
-        // )
-        // .await;
-    
-        // println!("Before: User: {}, User 2: {}", user_token_2022_before_burn_balance, user_2_token_2022_before_burn_balance);
-        // println!("After: User: {}, User 2: {}", user_token_2022_after_burn_balance, user_2_token_2022_after_burn_balance);
+                        let _ = sign_send_instructions(
+                            &mut test_client,
+                            &[transfer_ix],
+                            vec![&user, &payer_keypair],
+                            None,
+                        )
+                        .await;
 
-        // let initialize_ix =
-        //     create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+                        let user_wrapper_token_after_transfer_balance = get_token_balance(
+                            &mut test_client,
+                            &user_wrapper_token_account,
+                        )
+                        .await;
 
-        // let _ = match sign_send_instructions(
-        //     &mut test_client,
-        //     &vec![initialize_ix],
-        //     vec![&payer_keypair],
-        //     None,
-        // )
-        // .await
-        // {
-        //     Ok(_sig) => {
-        //         let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
-        //             &user.pubkey(),
-        //             &token_2022_mint,
-        //             &user_wrapper_token_account,
-        //             &user_token_2022_token_account,
-        //             amount_wrapper,
-        //         );
+                        let user_2_wrapper_token_after_transfer_balance = get_token_balance(
+                            &mut test_client,
+                            &user_2_wrapper_token_account,
+                        )
+                        .await;
 
-        //         let _ = match sign_send_instructions(
-        //             &mut test_client,
-        //             &vec![deposit_ix],
-        //             vec![&user, &payer_keypair],
-        //             None,
-        //         )
-        //         .await
-        //         {
-        //             Ok(_sig) => {
-        //                 let user_2_wrapper_token_account = create_associated_token_account(
-        //                     &mut test_client,
-        //                     &user_2.pubkey(),
-        //                     &wrapper_token_mint,
-        //                     &spl_token::id(),
-        //                 )
-        //                 .await
-        //                 .unwrap();
+                        assert_with_msg(
+                            user_wrapper_token_after_transfer_balance == 0,
+                            "Invalid user wrapper token after transfer balance change",
+                        );
 
-        //                 let transfer_ix = spl_token::instruction::transfer_checked(
-        //                     &spl_token::id(),
-        //                     &user_wrapper_token_account,
-        //                     &wrapper_token_mint,
-        //                     &user_2_wrapper_token_account,
-        //                     &user.pubkey(),
-        //                     &[&user.pubkey()],
-        //                     amount_wrapper_burn,
-        //                     decimal_2022,
-        //                 )
-        //                 .unwrap();
+                        assert_with_msg(
+                            user_2_wrapper_token_after_transfer_balance == amount_wrapper_burn,
+                            "Invalid user 2 wrapper token after transfer balance change",
+                        );
 
-        //                 let _ = sign_send_instructions(
-        //                     &mut test_client,
-        //                     &[transfer_ix],
-        //                     vec![&user, &payer_keypair],
-        //                     None,
-        //                 )
-        //                 .await;
+                        let user_2_token_2022_token_account = create_token_account_token_2022(
+                            &mut test_client,
+                            &user_2.pubkey(),
+                            &token_2022_mint,
+                        )
+                        .await
+                        .unwrap();
 
-        //                 let user_2_token_2022_token_account = create_token_account_token_2022(
-        //                     &mut test_client,
-        //                     &user_2.pubkey(),
-        //                     &token_2022_mint,
-        //                 )
-        //                 .await
-        //                 .unwrap();
+                        let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
+                            &user_2.pubkey(),
+                            &token_2022_mint,
+                            &user_2_wrapper_token_account,
+                            &user_2_token_2022_token_account,
+                            amount_wrapper_burn,
+                        );
 
-        //                 let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
-        //                     &user_2.pubkey(),
-        //                     &token_2022_mint,
-        //                     &user_2_wrapper_token_account,
-        //                     &user_2_token_2022_token_account,
-        //                     amount_wrapper_burn,
-        //                 );
-
-        //                 let _ = match sign_send_instructions(
-        //                     &mut test_client,
-        //                     &vec![burn_ix],
-        //                     vec![&user_2, &payer_keypair],
-        //                     None,
-        //                 )
-        //                 .await
-        //                 {
-        //                     Ok(_) => {
-        //                         let user_2_token_2022_after_burn_balance = get_token_balance(
-        //                             &mut test_client,
-        //                             &user_2_token_2022_token_account,
-        //                         )
-        //                         .await;
-        //                         let user_2_wrapper_after_burn_balance = get_token_balance(
-        //                             &mut test_client,
-        //                             &user_2_wrapper_token_account,
-        //                         )
-        //                         .await;
-
-        //                         assert_with_msg(
-        //                             user_2_token_2022_after_burn_balance == amount_wrapper_burn,
-        //                             "Invalid user 2 Token2022 token after burn balance change",
-        //                         );
-        //                         assert_with_msg(
-        //                             user_2_wrapper_after_burn_balance == 0,
-        //                             "Invalid user 2 wrapper token after burn balance change",
-        //                         );
-        //                     }
-        //                     Err(e) => {
-        //                         println!("Error burn tx: {}", e);
-        //                     }
-        //                 };
-        //             }
-        //             Err(e) => {
-        //                 println!("Error minting wrapper tokens: {}", e);
-        //             }
-        //         };
-        //     }
-        //     Err(e) => {
-        //         println!("Error initializing token mint: {}", e);
-        //     }
-        // };
+                        let _ = match sign_send_instructions(
+                            &mut test_client,
+                            &vec![burn_ix],
+                            vec![&user_2, &payer_keypair],
+                            None,
+                        )
+                        .await
+                        {
+                            Ok(_) => {
+                                let user_2_token_2022_after_burn_balance = get_token_balance_2022(
+                                    &mut test_client,
+                                    &user_2_token_2022_token_account,
+                                )
+                                .await;
+                
+                                let user_2_wrapper_token_after_burn_balance = get_token_balance(
+                                    &mut test_client,
+                                    &user_2_wrapper_token_account,
+                                )
+                                .await;
+        
+                                assert_with_msg(
+                                    user_2_token_2022_after_burn_balance == 98,
+                                    "Invalid user 2 Token2022 token after burn balance change",
+                                );
+                                assert_with_msg(
+                                    user_2_wrapper_token_after_burn_balance == 0,
+                                    "Invalid user 2 wrapper token after burn balance change",
+                                );
+                            }
+                            Err(e) => {
+                                println!("Error burn tx: {}", e);
+                            }
+                        };
+                    }
+                    Err(e) => {
+                        println!("Error minting wrapper tokens: {}", e);
+                    }
+                };
+            }
+            Err(e) => {
+                println!("Error initializing token mint: {}", e);
+            }
+        };
     }
 }

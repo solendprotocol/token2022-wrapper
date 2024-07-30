@@ -12,7 +12,8 @@ use solana_program::{
 use solana_program::system_instruction;
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
-use spl_token_2022::extension::ExtensionType;
+use spl_token_2022::extension::{ExtensionType, PodStateWithExtensionsMut};
+use spl_token_2022::pod::PodMint;
 
 use crate::{
     error::TokenWrapperError,
@@ -74,9 +75,10 @@ pub fn process_initialize_wrapper_token(
     let (mint_authority, _, _) = get_token_mint_authority(*wrapper_token_mint.key, *program_id);
     let (freeze_authority, _, _) = get_token_freeze_authority(*wrapper_token_mint.key, *program_id);
 
-    let unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data =
-        spl_token_2022::state::Mint::unpack(&unwrapped_token_2022_mint_data)?;
+    let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
+    let token_2022_mint_data = PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
+    let token_2022_decimals = token_2022_mint_data.base.decimals;
+    drop(unwrapped_token_2022_mint_data);
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
@@ -136,7 +138,7 @@ pub fn process_initialize_wrapper_token(
         wrapper_token_mint.key,
         &mint_authority,
         Some(&freeze_authority),
-        token_2022_mint_data.decimals,
+        token_2022_decimals,
     )?;
 
     invoke_signed(
@@ -258,9 +260,10 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
-    let unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data =
-        spl_token_2022::state::Mint::unpack(&unwrapped_token_2022_mint_data)?;
+    let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
+    let token_2022_mint_data = PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
+    let token_2022_decimals = token_2022_mint_data.base.decimals;
+    drop(unwrapped_token_2022_mint_data);
 
     if user_wrapper_token_account.lamports() == 0 {
         let ata_init_ix =
@@ -324,7 +327,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         user_authority.key,
         &[user_authority.key],
         amount,
-        token_2022_mint_data.decimals,
+        token_2022_decimals,
     )?;
 
     invoke(
@@ -353,7 +356,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         mint_authority.key,
         &[mint_authority.key],
         post_transfer_balance - pre_transfer_balance,
-        token_2022_mint_data.decimals,
+        token_2022_decimals,
     )?;
 
     invoke_signed(
@@ -411,9 +414,10 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
-    let unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data =
-        spl_token_2022::state::Mint::unpack(&unwrapped_token_2022_mint_data)?;
+    let mut unwrapped_token_2022_mint_data = token_2022_mint.try_borrow_mut_data()?;
+    let token_2022_mint_data = PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
+    let token_2022_decimals = token_2022_mint_data.base.decimals;
+    drop(unwrapped_token_2022_mint_data);
 
     assert_with_msg(
         user_wrapper_token_account.lamports() > 0,
@@ -458,7 +462,7 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         user_authority.key,
         &[user_authority.key],
         amount,
-        token_2022_mint_data.decimals,
+        token_2022_decimals,
     )?;
 
     invoke(
@@ -479,7 +483,7 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         reserve_authority.key,
         &[reserve_authority.key],
         amount,
-        token_2022_mint_data.decimals,
+        token_2022_decimals,
     )?;
 
     let (_, _, reserve_authority_seeds) = get_reserve_authority(*token_2022_mint.key, *program_id);

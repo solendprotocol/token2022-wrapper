@@ -6,13 +6,16 @@ use solana_sdk::signature::{Signature, Signer};
 use solana_sdk::transaction::Transaction;
 use solana_sdk::{account::Account, rent::Rent, signature::Keypair, system_instruction};
 use spl_token::state::Mint;
+use spl_token_2022::extension::StateWithExtensionsOwned;
 use spl_token_2022::{
     state::Mint as Token2022Mint,
+    state::Account as Token2022Account,
     extension::ExtensionType
 };
 use spl_token_client::token::ExtensionInitializationParams;
 
 use super::TransferFeeConfigWithKeypairs;
+use spl_token_2022::extension::BaseStateWithExtensions;
 
 pub async fn sign_send_instructions(
     client: &mut TestClient,
@@ -104,17 +107,38 @@ pub async fn create_token_account_token_2022(
 ) -> TransactionResult<Pubkey> {
     let account = Keypair::new();
 
-    let rent = client.banks_client.get_rent().await.unwrap();
-    let account_rent = rent.minimum_balance(spl_token_2022::state::Account::LEN);
+    let token_mint_info = client.banks_client.get_account(*token_mint).await?.unwrap();
+    let token_mint_data_with_extensions = StateWithExtensionsOwned::<Token2022Mint>::unpack(token_mint_info.data).unwrap();
+    
+    let mint_extensions: Vec<ExtensionType> = token_mint_data_with_extensions.get_extension_types().unwrap();
+    let required_extensions =
+            ExtensionType::get_required_init_account_extensions(&mint_extensions);
 
-    let ixs = vec![
+    let space = ExtensionType::try_calculate_account_len::<Token2022Account>(&required_extensions).unwrap();
+
+    let rent = client.banks_client.get_rent().await.unwrap();
+    let account_rent = rent.minimum_balance(space);
+
+    let mut ixs = vec![
         system_instruction::create_account(
             &client.payer.pubkey(),
             &account.pubkey(),
             account_rent,
-            spl_token_2022::state::Account::LEN as u64,
+            space as u64,
             &spl_token_2022::id(),
         ),
+    ];
+
+    if required_extensions.contains(&ExtensionType::ImmutableOwner) {
+        ixs.push(
+            spl_token_2022::instruction::initialize_immutable_owner(
+                &spl_token_2022::id(),
+                &account.pubkey(),
+            ).unwrap()
+        )
+    }
+
+    ixs.push(
         spl_token_2022::instruction::initialize_account(
             &spl_token_2022::id(),
             &account.pubkey(),
@@ -122,7 +146,7 @@ pub async fn create_token_account_token_2022(
             owner,
         )
         .unwrap(),
-    ];
+    );
 
     let res = match sign_send_instructions(
         client,
@@ -162,6 +186,17 @@ pub async fn get_token_balance(client: &mut TestClient, token_account: &Pubkey) 
     amount
 }
 
+pub async fn get_token_balance_2022(client: &mut TestClient, token_account: &Pubkey) -> u64 {
+    let amount = match get_token_account_2022(client, token_account).await {
+        Ok(acc) => {
+            acc.base.amount
+        },
+        Err(_) => 0,
+    };
+    amount
+}
+
+
 pub async fn get_token_account(
     client: &mut TestClient,
     token_account: &Pubkey,
@@ -170,14 +205,35 @@ pub async fn get_token_account(
     Ok(spl_token::state::Account::unpack(&account.data).unwrap_or_default())
 }
 
+pub async fn get_token_account_2022(
+    client: &mut TestClient,
+    token_account: &Pubkey,
+) -> TransactionResult<StateWithExtensionsOwned<Token2022Account>> {
+    let account_info = get_account(client, token_account).await;
+    let account: StateWithExtensionsOwned<Token2022Account> = StateWithExtensionsOwned::<Token2022Account>::unpack(account_info.data).unwrap();
+
+    Ok(account)
+}
+
 pub async fn get_token_mint(
     client: &mut TestClient,
     token_mint: &Pubkey,
 ) -> TransactionResult<spl_token::state::Mint> {
     let account = get_account(client, token_mint).await;
 
-    Ok(spl_token::state::Mint::unpack(&account.data).unwrap())
+    Ok(spl_token::state::Mint::unpack(&account.data.split_at(Mint::LEN).0).unwrap())
 }
+
+pub async fn get_token_mint_2022(
+    client: &mut TestClient,
+    token_mint: &Pubkey,
+) -> TransactionResult<StateWithExtensionsOwned<Token2022Mint>> {
+    let token_mint_info = client.banks_client.get_account(*token_mint).await?.unwrap();
+    let token_mint_data_with_extensions: StateWithExtensionsOwned<Token2022Mint> = StateWithExtensionsOwned::<Token2022Mint>::unpack(token_mint_info.data).unwrap();
+
+    Ok(token_mint_data_with_extensions)
+}
+
 
 pub async fn airdrop(
     client: &mut TestClient,
@@ -317,7 +373,7 @@ pub async fn create_token_2022_mint(
     freeze_authority: Option<&Pubkey>,
     decimals: u8,
     mint: Option<Keypair>,
-    transfer_fee_config: Option<TransferFeeConfigWithKeypairs>,
+    transfer_fee_config: Option<&TransferFeeConfigWithKeypairs>,
 ) -> TransactionResult<Pubkey> {
     let mint = mint.unwrap_or_else(Keypair::new);
 
@@ -326,12 +382,26 @@ pub async fn create_token_2022_mint(
     if transfer_fee_config.is_some() {
         let config = transfer_fee_config.unwrap();
 
+        let transfer_fee_basis_points = u16::from(
+            config
+                .transfer_fee_config
+                .newer_transfer_fee
+                .transfer_fee_basis_points,
+        );
+
+        let maximum_fee = u64::from(
+            config
+                .transfer_fee_config
+                .newer_transfer_fee
+                .maximum_fee
+        );
+
         extension_params.push(
             ExtensionInitializationParams::TransferFeeConfig { 
                 transfer_fee_config_authority: Some(config.transfer_fee_config_authority.pubkey()),
                 withdraw_withheld_authority: Some(config.withdraw_withheld_authority.pubkey()),
-                transfer_fee_basis_points: config.transfer_fee_config.newer_transfer_fee.transfer_fee_basis_points.into(),
-                maximum_fee: config.transfer_fee_config.newer_transfer_fee.maximum_fee.into()
+                transfer_fee_basis_points,
+                maximum_fee
             }
         );
     }
@@ -340,9 +410,7 @@ pub async fn create_token_2022_mint(
         .iter()
         .map(|e| e.extension())
         .collect::<Vec<_>>();
-    let space = ExtensionType::try_calculate_account_len::<Token2022Mint>(&extension_types).unwrap();
-    println!("Computed space: {}", space);
-
+    let space = ExtensionType::try_calculate_account_len::<Token2022Mint>(&extension_types).unwrap();    
     let mut ixs = vec![
         system_instruction::create_account(
             &client.payer.pubkey(),
@@ -405,10 +473,12 @@ pub async fn mint_token_2022_tokens(
         signing_keypairs.push(signer);
     }
 
-    let token_data = get_token_mint(client, mint).await;
+    let token_data = get_token_mint_2022(client, mint).await;
 
     let decimals = match token_data {
-        Ok(dec) => dec.decimals,
+        Ok(dec) => {
+            dec.base.decimals
+        },
         Err(_) => std::u8::MAX,
     };
 
