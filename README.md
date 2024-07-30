@@ -1,6 +1,6 @@
 # Token 2022 wrapper
 
-This is a program to wrap Token2022 Solana tokens into SPL tokens. Every token created using the Token2022 can be wrapped into its unique SPL token which can be used across several applications on Solana. This is an early release and does not include support for Extensions.
+This is a program to wrap Token2022 Solana tokens into SPL tokens. Every token created using the Token2022 can be wrapped into its unique SPL token which can be used across several applications on Solana. This is an early release and only include support for transfer fee extension.
 
 ### Building and Testing Locally
 
