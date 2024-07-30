@@ -5,9 +5,7 @@ use solana_program::{
 
 use crate::error::TokenWrapperError;
 
-use super::{
-    get_reserve_authority, get_reserve_authority_token_account, get_wrapper_token_mint,
-};
+use super::{get_reserve_authority, get_reserve_authority_token_account, get_wrapper_token_mint};
 
 #[track_caller]
 #[inline(always)]

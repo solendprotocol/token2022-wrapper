@@ -6,10 +6,7 @@ use solana_program::{
 
 use crate::{
     instruction::TokenWrapperInstruction,
-    utils::{
-        get_reserve_authority, get_reserve_authority_token_account,
-        get_wrapper_token_mint,
-    },
+    utils::{get_reserve_authority, get_reserve_authority_token_account, get_wrapper_token_mint},
 };
 
 pub fn create_initialize_wrapper_token_instruction(

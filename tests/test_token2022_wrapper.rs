@@ -14,7 +14,7 @@ use token2022_wrapper::{
         create_initialize_wrapper_token_instruction,
         create_withdraw_and_burn_wrapper_tokens_instruction,
     },
-    utils::get_wrapper_token_mint
+    utils::get_wrapper_token_mint,
 };
 use utils::{
     airdrop, assert_with_msg, create_associated_token_account, create_mint, create_token_2022_mint,

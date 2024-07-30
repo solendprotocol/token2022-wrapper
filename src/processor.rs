@@ -19,10 +19,11 @@ use crate::{
     error::TokenWrapperError,
     instruction::TokenWrapperInstruction,
     utils::{
-        assert_is_account_initialized, assert_is_account_uninitialized,
-        assert_rent, assert_reserve_authority, assert_reserve_authority_token_account,
-        assert_system_program, assert_token_2022_program, assert_token_program, assert_with_msg,
-        assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account, get_wrapper_token_mint,
+        assert_is_account_initialized, assert_is_account_uninitialized, assert_rent,
+        assert_reserve_authority, assert_reserve_authority_token_account, assert_system_program,
+        assert_token_2022_program, assert_token_program, assert_with_msg,
+        assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account,
+        get_wrapper_token_mint,
     },
 };
 
@@ -355,8 +356,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         spl_token_2022::state::Account::unpack(&reserve_token_account_data_copy_stripped)?.amount;
     drop(reserve_token_account_data_copy);
 
-    let (_, _, reserve_authority_seeds) =
-        get_reserve_authority(*token_2022_mint.key, *program_id);
+    let (_, _, reserve_authority_seeds) = get_reserve_authority(*token_2022_mint.key, *program_id);
 
     let user_mint_ix = spl_token::instruction::mint_to_checked(
         token_program.key,
