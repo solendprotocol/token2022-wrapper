@@ -381,21 +381,14 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     assert_token_2022_program(*token_2022_program.key)?;
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
-    msg!("STARTING_VALIDATION");
 
     validate_mint(token_2022_mint, true)?;
-    msg!("VALIDATED_MINT");
     validate_mint(wrapper_token_mint, false)?;
-    msg!("VALIDATED_WRAPPER_MINT");
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
-    msg!("VALIDATED_WRAPPER_MINT_ADDRESS");
 
     validate_token_account(user_token_2022_token_account, user_authority.key, true)?;
-    msg!("VALIDATED_TA_1");
     validate_token_account(user_wrapper_token_account, user_authority.key, false)?;
-    msg!("VALIDATED_TA_2");
     validate_token_account(reserve_token_2022_token_account, reserve_authority.key, true)?;
-    msg!("VALIDATED_TA_3");
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
     let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;
