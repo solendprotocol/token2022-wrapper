@@ -16,10 +16,10 @@ pub enum TokenWrapperError {
     UnexpectedSystemProgram = 3,
     #[error("Unexpected Rent")]
     UnexpectedRent = 4,
-    #[error("Unexpected user token account owner")]
-    UnexpectedUserTokenAccountOwner = 5,
-    #[error("Unexpected reserve token account owner")]
-    UnexpectedReserveTokenAccountOwner = 6,
+    #[error("Invalid token account")]
+    InvalidTokenAccount = 5,
+    #[error("Invalid token mint")]
+    InvalidTokenMint = 6,
     #[error("Unexpected reserve token account")]
     UnexpectedReserveTokenAccount = 7,
     #[error("Unexpected reserve authority")]

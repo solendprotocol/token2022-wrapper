@@ -8,7 +8,6 @@ use solana_program_test::*;
 use solana_sdk::{native_token::LAMPORTS_PER_SOL, pubkey, signature::Keypair, signer::Signer};
 use spl_associated_token_account::get_associated_token_address;
 use token2022_wrapper::{
-    error::TokenWrapperError,
     instruction_builders::{
         create_deposit_and_mint_wrapper_tokens_instruction,
         create_initialize_wrapper_token_instruction,
@@ -222,6 +221,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error: {}", e);
+                panic!("test_1 error: {}", e);
             }
         };
     }
@@ -434,6 +434,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_4 error: {}", e);
             }
         };
     }
@@ -536,6 +537,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_5 error: {}", e);
             }
         };
     }
@@ -638,6 +640,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_6 error: {}", e);
             }
         };
     }
@@ -740,6 +743,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_7 error: {}", e);
             }
         };
     }
@@ -822,6 +826,7 @@ mod tests {
                             }
                             None => {
                                 println!("Could not parse error code from the BanksClientError");
+                                panic!("Could not parse error code from the BanksClientError");
                             }
                         };
                     }
@@ -829,6 +834,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_8 error: {}", e);
             }
         };
     }
@@ -922,6 +928,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_9 error: {}", e);
             }
         };
     }
@@ -1005,6 +1012,7 @@ mod tests {
                             }
                             None => {
                                 println!("Could not parse error code from the BanksClientError");
+                                panic!("Could not parse error code from the BanksClientError");
                             }
                         };
                     }
@@ -1012,6 +1020,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_10 error: {}", e);
             }
         };
     }
@@ -1151,11 +1160,13 @@ mod tests {
                     }
                     Err(e) => {
                         println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_11 error: {}", e);
                     }
                 };
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_11 error: {}", e);
             }
         };
     }
@@ -1295,11 +1306,13 @@ mod tests {
                     }
                     Err(e) => {
                         println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_12 error: {}", e);
                     }
                 };
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_12 error: {}", e);
             }
         };
     }
@@ -1439,11 +1452,13 @@ mod tests {
                     }
                     Err(e) => {
                         println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_13 error: {}", e);
                     }
                 };
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_13 error: {}", e);
             }
         };
     }
@@ -1583,11 +1598,13 @@ mod tests {
                     }
                     Err(e) => {
                         println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_14 error: {}", e);
                     }
                 };
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_14 error: {}", e);
             }
         };
     }
@@ -1737,6 +1754,7 @@ mod tests {
                                         println!(
                                             "Could not parse error code from the BanksClientError"
                                         );
+                                        panic!("Could not parse error code from the BanksClientError");
                                     }
                                 };
                             }
@@ -1744,11 +1762,13 @@ mod tests {
                     }
                     Err(e) => {
                         println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_15 error: {}", e);
                     }
                 };
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_15 error: {}", e);
             }
         };
     }
@@ -1874,55 +1894,22 @@ mod tests {
                                 panic!("Expected test_16 to fail, but succeeded");
                             }
                             Err(e) => {
-                                println!("Test 16 error: {}", e);
-                                // let _ = match extract_error_code(e.to_string().as_str()) {
-                                //     Some(error_code) => {
-                                //         let user_token_2022_after_burn_balance = get_token_balance(
-                                //             &mut test_client,
-                                //             &user_token_2022_token_account,
-                                //         )
-                                //         .await;
-                                //         let user_wrapper_after_burn_balance = get_token_balance(
-                                //             &mut test_client,
-                                //             &user_wrapper_token_account,
-                                //         )
-                                //         .await;
-
-                                //         assert_with_msg(
-                                //         user_token_2022_after_balance
-                                //             == user_token_2022_after_burn_balance,
-                                //         "Invalid user Token2022 token after burn balance change",
-                                //     );
-                                //         assert_with_msg(
-                                //             user_wrapper_after_balance
-                                //                 == user_wrapper_after_burn_balance,
-                                //             "Invalid user wrapper token after burn balance change",
-                                //         );
-
-                                //         assert_with_msg(
-                                //             error_code
-                                //                 == TokenWrapperError::ExpectedInitializedAccount
-                                //                     as u32,
-                                //             format!("Invalid error thrown for test_16: {}", e)
-                                //                 .as_str(),
-                                //         );
-                                //     }
-                                //     None => {
-                                //         println!(
-                                //             "Could not parse error code from the BanksClientError"
-                                //         );
-                                //     }
-                                // };
+                                assert_with_msg(
+                                    e.to_string().contains("invalid account data"),
+                                    "Expected test_9 to fail with invalid account data",
+                                );        
                             }
                         };
                     }
                     Err(e) => {
                         println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_16 error: {}", e);
                     }
                 };
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_16 error: {}", e);
             }
         };
     }
@@ -2083,6 +2070,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_17 error: {}", e);
             }
         };
     }
@@ -2298,6 +2286,7 @@ mod tests {
             }
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
+                panic!("test_18 error: {}", e);
             }
         };
     }

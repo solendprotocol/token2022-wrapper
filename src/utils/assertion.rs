@@ -1,5 +1,5 @@
 use solana_program::{
-    entrypoint::ProgramResult, msg, program_error::ProgramError,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey, sysvar,
 };
 
@@ -101,4 +101,43 @@ pub fn assert_reserve_authority_token_account(
         TokenWrapperError::UnexpectedReserveTokenAccount,
         "Invalid reserve authority token account passed",
     )
+}
+
+pub fn validate_token_account(
+    token_account_info: &AccountInfo,
+    expected_owner: &Pubkey,
+    is_token_2022: bool
+) -> ProgramResult {
+    let token_account_data = token_account_info.try_borrow_data()?;
+    let token_account = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(&token_account_data)?;
+    let expected_program_owner = if is_token_2022 {
+        spl_token_2022::id()
+    } else {
+        spl_token::id()
+    };
+
+    assert_with_msg(
+        &token_account.base.owner == expected_owner && token_account_info.owner == &expected_program_owner,
+        TokenWrapperError::InvalidTokenAccount,
+        "Incorrect token account"
+    )
+}
+
+pub fn validate_mint(
+    token_mint_info: &AccountInfo,
+    is_token_2022: bool
+) -> ProgramResult {
+    let token_mint_data = token_mint_info.try_borrow_data()?;
+    let token_mint = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_mint_data)?;
+    let expected_program_owner = if is_token_2022 {
+        spl_token_2022::id()
+    } else {
+        spl_token::id()
+    };
+
+    assert_with_msg(
+        token_mint.base.is_initialized && token_mint_info.owner == &expected_program_owner,
+        TokenWrapperError::InvalidTokenMint,
+        "Incorrect token mint"
+    )    
 }
