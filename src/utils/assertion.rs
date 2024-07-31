@@ -1,5 +1,5 @@
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey, sysvar,
 };
 
@@ -100,25 +100,5 @@ pub fn assert_reserve_authority_token_account(
         expected_reserve_authority_token_account == actual_reserve_authority_token_account,
         TokenWrapperError::UnexpectedReserveTokenAccount,
         "Invalid reserve authority token account passed",
-    )
-}
-
-pub fn assert_is_account_uninitialized(account: &AccountInfo) -> ProgramResult {
-    let account_lamports = account.try_borrow_lamports()?;
-
-    assert_with_msg(
-        account.data_is_empty() && **account_lamports == 0u64,
-        TokenWrapperError::UnexpectedInitializedAccount,
-        "The account is already initialized, expected to be uninitialized",
-    )
-}
-
-pub fn assert_is_account_initialized(account: &AccountInfo) -> ProgramResult {
-    let account_lamports = account.try_borrow_lamports()?;
-
-    assert_with_msg(
-        **account_lamports > 0u64,
-        TokenWrapperError::ExpectedInitializedAccount,
-        "The account is not initialized, expected to be initialized",
     )
 }

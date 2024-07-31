@@ -19,7 +19,7 @@ use crate::{
     error::TokenWrapperError,
     instruction::TokenWrapperInstruction,
     utils::{
-        assert_is_account_initialized, assert_is_account_uninitialized, assert_rent,
+        assert_rent,
         assert_reserve_authority, assert_reserve_authority_token_account, assert_system_program,
         assert_token_2022_program, assert_token_program, assert_with_msg,
         assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account,
@@ -86,9 +86,6 @@ pub fn process_initialize_wrapper_token(
         *program_id,
         *reserve_token_2022_token_account.key,
     )?;
-    assert_is_account_uninitialized(wrapper_token_mint)?;
-    assert_is_account_uninitialized(reserve_authority)?;
-    assert_is_account_uninitialized(reserve_token_2022_token_account)?;
 
     assert_token_program(*token_program.key)?;
     assert_system_program(*system_program.key)?;
@@ -241,10 +238,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let associated_token_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    msg!("reserve_auth:{:?}", reserve_authority);
-
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
-    assert_is_account_initialized(wrapper_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
@@ -409,7 +403,6 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
-    assert_is_account_initialized(wrapper_token_mint)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
@@ -428,12 +421,6 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         PodStateWithExtensionsMut::<PodMint>::unpack(&mut unwrapped_token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data.base.decimals;
     drop(unwrapped_token_2022_mint_data);
-
-    assert_with_msg(
-        user_wrapper_token_account.lamports() > 0,
-        TokenWrapperError::ExpectedInitializedAccount,
-        "The account is not initialized, expected to be initialized",
-    )?;
 
     let user_token_2022_token_account_data = user_token_2022_token_account.try_borrow_data()?;
     let (user_token_2022_token_account_data_stripped, _) =

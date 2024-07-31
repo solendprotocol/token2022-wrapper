@@ -16,18 +16,14 @@ pub enum TokenWrapperError {
     UnexpectedSystemProgram = 3,
     #[error("Unexpected Rent")]
     UnexpectedRent = 4,
-    #[error("Unexpected initialized account")]
-    UnexpectedInitializedAccount = 5,
-    #[error("Expected initialized account")]
-    ExpectedInitializedAccount = 6,
     #[error("Unexpected user token account owner")]
-    UnexpectedUserTokenAccountOwner = 7,
+    UnexpectedUserTokenAccountOwner = 5,
     #[error("Unexpected reserve token account owner")]
-    UnexpectedReserveTokenAccountOwner = 8,
+    UnexpectedReserveTokenAccountOwner = 6,
     #[error("Unexpected reserve token account")]
-    UnexpectedReserveTokenAccount = 9,
+    UnexpectedReserveTokenAccount = 7,
     #[error("Unexpected reserve authority")]
-    UnexpectedReserveAuthority = 10,
+    UnexpectedReserveAuthority = 8,
 }
 
 impl From<TokenWrapperError> for ProgramError {
