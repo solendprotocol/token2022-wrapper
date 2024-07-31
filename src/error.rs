@@ -24,6 +24,8 @@ pub enum TokenWrapperError {
     UnexpectedReserveTokenAccount = 7,
     #[error("Unexpected reserve authority")]
     UnexpectedReserveAuthority = 8,
+    #[error("Expected account to be owned by wrapper program")]
+    ExpectedOwnerWrapperProgram = 9,
 }
 
 impl From<TokenWrapperError> for ProgramError {

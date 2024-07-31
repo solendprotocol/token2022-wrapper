@@ -72,18 +72,14 @@ pub fn process_initialize_wrapper_token(
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;
-    let token_2022_decimals = token_2022_mint_data_parsed.base.decimals;
-    drop(token_2022_mint_data);
-
-    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
-    assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
+    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, false)?;
+    assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
         *reserve_authority.key,
         *program_id,
-        *reserve_token_2022_token_account.key,
+        reserve_token_2022_token_account,
+        false
     )?;
 
     assert_token_program(*token_program.key)?;
@@ -126,6 +122,11 @@ pub fn process_initialize_wrapper_token(
             .collect::<Vec<&[u8]>>()
             .as_slice()],
     )?;
+
+    let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
+    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;
+    let token_2022_decimals = token_2022_mint_data_parsed.base.decimals;
+    drop(token_2022_mint_data);
 
     let init_mint_ix = spl_token::instruction::initialize_mint(
         token_program.key,
@@ -237,12 +238,14 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let associated_token_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
+    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, true)?;
+    assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
         *reserve_authority.key,
         *program_id,
-        *reserve_token_2022_token_account.key,
+        reserve_token_2022_token_account,
+        true
     )?;
 
     assert_token_program(*token_program.key)?;
@@ -279,7 +282,6 @@ pub fn process_deposit_and_mint_wrapper_tokens(
 
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;
-    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
 
     validate_token_account(user_token_2022_token_account, user_authority.key, true)?;
     validate_token_account(user_wrapper_token_account, user_authority.key, false)?;
@@ -369,12 +371,14 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    assert_reserve_authority(*token_2022_mint.key, *program_id, *reserve_authority.key)?;
+    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, true)?;
+    assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
     assert_reserve_authority_token_account(
         *token_2022_mint.key,
         *reserve_authority.key,
         *program_id,
-        *reserve_token_2022_token_account.key,
+        reserve_token_2022_token_account,
+        true
     )?;
 
     assert_token_program(*token_program.key)?;
@@ -384,7 +388,6 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
 
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;
-    assert_wrapper_token_mint(*token_2022_mint.key, *program_id, *wrapper_token_mint.key)?;
 
     validate_token_account(user_token_2022_token_account, user_authority.key, true)?;
     validate_token_account(user_wrapper_token_account, user_authority.key, false)?;

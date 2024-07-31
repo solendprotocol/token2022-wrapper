@@ -144,7 +144,7 @@ pub async fn create_and_mint_frozen_tokens_token_2022(
 
 mod tests {
 
-    use token2022_wrapper::utils::get_reserve_authority;
+    use token2022_wrapper::{error::TokenWrapperError, utils::get_reserve_authority};
 
     use super::*;
 
@@ -284,10 +284,18 @@ mod tests {
                 panic!("Expected test_2 to fail, but succeeded");
             }
             Err(e) => {
-                assert_with_msg(
-                    e.to_string().contains("0x0"),
-                    "Expected test_2 to fail with 0x0 (already initialized account)",
-                );
+                let _ = match extract_error_code(e.to_string().as_str()) {
+                    Some(error_code) => {
+                        assert_with_msg(
+                            error_code == TokenWrapperError::UnexpectedWrapperToken as u32,
+                            format!("Invalid error thrown for test_2: {}", e).as_str(),
+                        );
+                    }
+                    None => {
+                        println!("Could not parse error code from the BanksClientError");
+                        panic!("Could not parse error code from the BanksClientError");
+                    }
+                };
             }
         };
     }
@@ -919,10 +927,18 @@ mod tests {
                         panic!("Expected test_9 to fail, but succeeded");
                     }
                     Err(e) => {
-                        assert_with_msg(
-                            e.to_string().contains("the request exceeded its deadline"),
-                            "Expected test_9 to fail with DeadlineExceeded",
-                        );
+                        let _ = match extract_error_code(e.to_string().as_str()) {
+                            Some(error_code) => {
+                                assert_with_msg(
+                                    error_code == TokenWrapperError::UnexpectedWrapperToken as u32,
+                                    format!("Invalid error thrown for test_9: {}", e).as_str(),
+                                );
+                            }
+                            None => {
+                                println!("Could not parse error code from the BanksClientError");
+                                panic!("Could not parse error code from the BanksClientError");
+                            }
+                        };
                     }
                 };
             }
@@ -1894,10 +1910,18 @@ mod tests {
                                 panic!("Expected test_16 to fail, but succeeded");
                             }
                             Err(e) => {
-                                assert_with_msg(
-                                    e.to_string().contains("invalid account data"),
-                                    "Expected test_9 to fail with invalid account data",
-                                );        
+                                let _ = match extract_error_code(e.to_string().as_str()) {
+                                    Some(error_code) => {
+                                        assert_with_msg(
+                                            error_code == TokenWrapperError::UnexpectedWrapperToken as u32,
+                                            format!("Invalid error thrown for test_16: {}", e).as_str(),
+                                        );
+                                    }
+                                    None => {
+                                        println!("Could not parse error code from the BanksClientError");
+                                        panic!("Could not parse error code from the BanksClientError");
+                                    }
+                                };
                             }
                         };
                     }
