@@ -26,6 +26,8 @@ pub enum TokenWrapperError {
     UnexpectedReserveAuthority = 8,
     #[error("Expected account to be owned by wrapper program")]
     ExpectedOwnerWrapperProgram = 9,
+    #[error("Missing signer")]
+    MissingSigner = 10,
 }
 
 impl From<TokenWrapperError> for ProgramError {

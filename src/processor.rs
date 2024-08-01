@@ -14,7 +14,8 @@ use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
 
-use crate::utils::{create_account, validate_mint, validate_token_account};
+use crate::error::TokenWrapperError;
+use crate::utils::{assert_with_msg, create_account, validate_mint, validate_token_account};
 use crate::{
     instruction::TokenWrapperInstruction,
     utils::{
@@ -70,6 +71,8 @@ pub fn process_initialize_wrapper_token(
     let token_2022_program = next_account_info(accounts_info_iter)?;
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
+
+    assert_with_msg(payer.is_signer, TokenWrapperError::MissingSigner, "The payer account needs to be a signer")?;
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, false)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
@@ -211,6 +214,8 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let associated_token_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
+    assert_with_msg(user_authority.is_signer, TokenWrapperError::MissingSigner, "The user authority needs to be a signer")?;
+
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, true)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
     assert_reserve_authority_token_account(
@@ -343,6 +348,8 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     let token_2022_program = next_account_info(accounts_info_iter)?;
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
+
+    assert_with_msg(user_authority.is_signer, TokenWrapperError::MissingSigner, "The user authority needs to be a signer")?;
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, true)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
