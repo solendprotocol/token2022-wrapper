@@ -1,5 +1,4 @@
 use solana_program::rent::Rent;
-use solana_program::system_instruction;
 use solana_program::sysvar::Sysvar;
 use solana_program::{
     system_program,
@@ -15,7 +14,7 @@ use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
 
-use crate::utils::{validate_mint, validate_token_account};
+use crate::utils::{create_account, validate_mint, validate_token_account};
 use crate::{
     instruction::TokenWrapperInstruction,
     utils::{
@@ -99,28 +98,15 @@ pub fn process_initialize_wrapper_token(
 
     let mint_data_length = Mint::LEN as u64;
     let rent = Rent::get().unwrap();
-    let mint_lamports = rent.minimum_balance(mint_data_length as usize);
 
-    let create_mint_account_ix = system_instruction::create_account(
-        payer.key,
-        wrapper_token_mint.key,
-        mint_lamports,
-        mint_data_length,
+    create_account(
+        &payer, 
+        &wrapper_token_mint,
+        system_program,
         &spl_token::id(),
-    );
-
-    invoke_signed(
-        &create_mint_account_ix,
-        &[
-            payer.clone(),
-            wrapper_token_mint.clone(),
-            system_program.clone(),
-        ],
-        &[wrapper_token_mint_seeds
-            .iter()
-            .map(|seed| seed.as_slice())
-            .collect::<Vec<&[u8]>>()
-            .as_slice()],
+        &rent,
+        mint_data_length,
+        wrapper_token_mint_seeds.clone()
     )?;
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
@@ -157,28 +143,15 @@ pub fn process_initialize_wrapper_token(
         &[ExtensionType::ImmutableOwner],
     )? as u64;
     let rent = Rent::get().unwrap();
-    let token_account_lamports = rent.minimum_balance(token_account_data_length as usize);
 
-    let create_reserve_token_account_ix = system_instruction::create_account(
-        payer.key,
-        reserve_token_2022_token_account.key,
-        token_account_lamports,
-        token_account_data_length,
+    create_account(
+        &payer, 
+        &reserve_token_2022_token_account,
+        system_program,
         &spl_token_2022::id(),
-    );
-
-    invoke_signed(
-        &create_reserve_token_account_ix,
-        &[
-            payer.clone(),
-            reserve_token_2022_token_account.clone(),
-            system_program.clone(),
-        ],
-        &[reserve_token_account_seeds
-            .iter()
-            .map(|seed| seed.as_slice())
-            .collect::<Vec<&[u8]>>()
-            .as_slice()],
+        &rent,
+        token_account_data_length,
+        reserve_token_account_seeds.clone()
     )?;
 
     invoke(
