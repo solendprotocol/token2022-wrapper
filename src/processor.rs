@@ -305,7 +305,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         user_wrapper_token_account.key,
         reserve_authority.key,
         &[reserve_authority.key],
-        post_transfer_balance - pre_transfer_balance,
+        post_transfer_balance.checked_sub(pre_transfer_balance).unwrap(),
         token_2022_decimals,
     )?;
 
