@@ -10,7 +10,7 @@ pub enum TokenWrapperInstruction {
     ///
     /// Accounts expected by this instruction:
     ///
-    /// 0. `[signer]` The payer paying for the initialization of mint account on the Token program
+    /// 0. `[signer, writable]` The payer paying for the initialization of mint account on the Token program
     /// 1. `[]` Token2022 token mint
     /// 2. `[writable]` Wrapper token mint, uninitialized
     ///     Must be a PDA with seeds ["wrapper", Token2022 token mint]
@@ -29,11 +29,11 @@ pub enum TokenWrapperInstruction {
     ///
     /// Accounts expected by this instruction:
     ///
-    /// 0. `[signer]` User authority
+    /// 0. `[signer, writable]` User authority
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Token2022 token mint
-    /// 3. `[]` Wrapper token mint
+    /// 3. `[writable]` Wrapper token mint
     /// 4. `[writable]` User's token account for the wrapper token
     /// 5. `[writable]` User's token account for the Token2022 token
     /// 6. `[writable]` Reserve's token account for the Token2022 token
@@ -49,7 +49,7 @@ pub enum TokenWrapperInstruction {
     ///
     /// Accounts expected by this instruction:
     ///
-    /// 0. `[signer]` User authority
+    /// 0. `[signer, writable]` User authority
     /// 1. `[]` Reserve authority
     ///     Must be a PDA with seeds ["reserve_authority", Token2022 token mint]
     /// 2. `[]` Token2022 token mint
