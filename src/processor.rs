@@ -15,7 +15,7 @@ use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
 
 use crate::error::TokenWrapperError;
-use crate::utils::{assert_with_msg, create_account, validate_mint, validate_token_account};
+use crate::utils::{assert_associated_token_program, assert_with_msg, create_account, validate_mint, validate_token_account};
 use crate::{
     instruction::TokenWrapperInstruction,
     utils::{
@@ -85,6 +85,7 @@ pub fn process_initialize_wrapper_token(
     )?;
 
     assert_token_program(*token_program.key)?;
+    assert_token_2022_program(*token_2022_program.key)?;
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
@@ -231,6 +232,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     assert_token_program(*token_program.key)?;
     assert_token_2022_program(*token_2022_program.key)?;
     assert_system_program(*system_program.key)?;
+    assert_associated_token_program(*associated_token_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
