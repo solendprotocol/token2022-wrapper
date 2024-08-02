@@ -124,104 +124,49 @@ createErrorFromCodeLookup.set(0x4, () => new UnexpectedRentError())
 createErrorFromNameLookup.set('UnexpectedRent', () => new UnexpectedRentError())
 
 /**
- * UnexpectedInitializedAccount: 'Unexpected initialized account'
+ * InvalidTokenAccount: 'Invalid token account'
  *
  * @category Errors
  * @category generated
  */
-export class UnexpectedInitializedAccountError extends Error {
+export class InvalidTokenAccountError extends Error {
   readonly code: number = 0x5
-  readonly name: string = 'UnexpectedInitializedAccount'
+  readonly name: string = 'InvalidTokenAccount'
   constructor() {
-    super('Unexpected initialized account')
+    super('Invalid token account')
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedInitializedAccountError)
+      Error.captureStackTrace(this, InvalidTokenAccountError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(
-  0x5,
-  () => new UnexpectedInitializedAccountError()
-)
+createErrorFromCodeLookup.set(0x5, () => new InvalidTokenAccountError())
 createErrorFromNameLookup.set(
-  'UnexpectedInitializedAccount',
-  () => new UnexpectedInitializedAccountError()
+  'InvalidTokenAccount',
+  () => new InvalidTokenAccountError()
 )
 
 /**
- * ExpectedInitializedAccount: 'Expected initialized account'
+ * InvalidTokenMint: 'Invalid token mint'
  *
  * @category Errors
  * @category generated
  */
-export class ExpectedInitializedAccountError extends Error {
+export class InvalidTokenMintError extends Error {
   readonly code: number = 0x6
-  readonly name: string = 'ExpectedInitializedAccount'
+  readonly name: string = 'InvalidTokenMint'
   constructor() {
-    super('Expected initialized account')
+    super('Invalid token mint')
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, ExpectedInitializedAccountError)
+      Error.captureStackTrace(this, InvalidTokenMintError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x6, () => new ExpectedInitializedAccountError())
+createErrorFromCodeLookup.set(0x6, () => new InvalidTokenMintError())
 createErrorFromNameLookup.set(
-  'ExpectedInitializedAccount',
-  () => new ExpectedInitializedAccountError()
-)
-
-/**
- * UnexpectedUserTokenAccountOwner: 'Unexpected user token account owner'
- *
- * @category Errors
- * @category generated
- */
-export class UnexpectedUserTokenAccountOwnerError extends Error {
-  readonly code: number = 0x7
-  readonly name: string = 'UnexpectedUserTokenAccountOwner'
-  constructor() {
-    super('Unexpected user token account owner')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedUserTokenAccountOwnerError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(
-  0x7,
-  () => new UnexpectedUserTokenAccountOwnerError()
-)
-createErrorFromNameLookup.set(
-  'UnexpectedUserTokenAccountOwner',
-  () => new UnexpectedUserTokenAccountOwnerError()
-)
-
-/**
- * UnexpectedReserveTokenAccountOwner: 'Unexpected reserve token account owner'
- *
- * @category Errors
- * @category generated
- */
-export class UnexpectedReserveTokenAccountOwnerError extends Error {
-  readonly code: number = 0x8
-  readonly name: string = 'UnexpectedReserveTokenAccountOwner'
-  constructor() {
-    super('Unexpected reserve token account owner')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedReserveTokenAccountOwnerError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(
-  0x8,
-  () => new UnexpectedReserveTokenAccountOwnerError()
-)
-createErrorFromNameLookup.set(
-  'UnexpectedReserveTokenAccountOwner',
-  () => new UnexpectedReserveTokenAccountOwnerError()
+  'InvalidTokenMint',
+  () => new InvalidTokenMintError()
 )
 
 /**
@@ -231,7 +176,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedReserveTokenAccountError extends Error {
-  readonly code: number = 0x9
+  readonly code: number = 0x7
   readonly name: string = 'UnexpectedReserveTokenAccount'
   constructor() {
     super('Unexpected reserve token account')
@@ -242,7 +187,7 @@ export class UnexpectedReserveTokenAccountError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x9,
+  0x7,
   () => new UnexpectedReserveTokenAccountError()
 )
 createErrorFromNameLookup.set(
@@ -257,7 +202,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedReserveAuthorityError extends Error {
-  readonly code: number = 0xa
+  readonly code: number = 0x8
   readonly name: string = 'UnexpectedReserveAuthority'
   constructor() {
     super('Unexpected reserve authority')
@@ -267,11 +212,54 @@ export class UnexpectedReserveAuthorityError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0xa, () => new UnexpectedReserveAuthorityError())
+createErrorFromCodeLookup.set(0x8, () => new UnexpectedReserveAuthorityError())
 createErrorFromNameLookup.set(
   'UnexpectedReserveAuthority',
   () => new UnexpectedReserveAuthorityError()
 )
+
+/**
+ * ExpectedOwnerWrapperProgram: 'Expected account to be owned by wrapper program'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ExpectedOwnerWrapperProgramError extends Error {
+  readonly code: number = 0x9
+  readonly name: string = 'ExpectedOwnerWrapperProgram'
+  constructor() {
+    super('Expected account to be owned by wrapper program')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ExpectedOwnerWrapperProgramError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x9, () => new ExpectedOwnerWrapperProgramError())
+createErrorFromNameLookup.set(
+  'ExpectedOwnerWrapperProgram',
+  () => new ExpectedOwnerWrapperProgramError()
+)
+
+/**
+ * MissingSigner: 'Missing signer'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MissingSignerError extends Error {
+  readonly code: number = 0xa
+  readonly name: string = 'MissingSigner'
+  constructor() {
+    super('Missing signer')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MissingSignerError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0xa, () => new MissingSignerError())
+createErrorFromNameLookup.set('MissingSigner', () => new MissingSignerError())
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

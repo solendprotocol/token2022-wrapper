@@ -58,33 +58,33 @@
     },
     {
       "code": 5,
-      "name": "UnexpectedInitializedAccount",
-      "msg": "Unexpected initialized account"
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
     },
     {
       "code": 6,
-      "name": "ExpectedInitializedAccount",
-      "msg": "Expected initialized account"
+      "name": "InvalidTokenMint",
+      "msg": "Invalid token mint"
     },
     {
       "code": 7,
-      "name": "UnexpectedUserTokenAccountOwner",
-      "msg": "Unexpected user token account owner"
-    },
-    {
-      "code": 8,
-      "name": "UnexpectedReserveTokenAccountOwner",
-      "msg": "Unexpected reserve token account owner"
-    },
-    {
-      "code": 9,
       "name": "UnexpectedReserveTokenAccount",
       "msg": "Unexpected reserve token account"
     },
     {
-      "code": 10,
+      "code": 8,
       "name": "UnexpectedReserveAuthority",
       "msg": "Unexpected reserve authority"
+    },
+    {
+      "code": 9,
+      "name": "ExpectedOwnerWrapperProgram",
+      "msg": "Expected account to be owned by wrapper program"
+    },
+    {
+      "code": 10,
+      "name": "MissingSigner",
+      "msg": "Missing signer"
     }
   ],
   "metadata": {
