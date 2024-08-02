@@ -88,6 +88,8 @@ pub fn process_initialize_wrapper_token(
     assert_system_program(*system_program.key)?;
     assert_rent(*rent_sysvar.key)?;
 
+    validate_mint(token_2022_mint, true)?;
+
     let (_, _, wrapper_token_mint_seeds) =
         get_wrapper_token_mint(*token_2022_mint.key, *program_id);
 
@@ -261,9 +263,9 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;
 
-    validate_token_account(user_token_2022_token_account, user_authority.key, true)?;
-    validate_token_account(user_wrapper_token_account, user_authority.key, false)?;
-    validate_token_account(reserve_token_2022_token_account, reserve_authority.key, true)?;
+    validate_token_account(user_token_2022_token_account, user_authority.key, token_2022_mint.key, true)?;
+    validate_token_account(user_wrapper_token_account, user_authority.key, wrapper_token_mint.key, false)?;
+    validate_token_account(reserve_token_2022_token_account, reserve_authority.key, token_2022_mint.key, true)?;
 
     let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
     let reserve_token_2022_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(&reserve_token_2022_token_account_data)?;
@@ -369,9 +371,9 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;
 
-    validate_token_account(user_token_2022_token_account, user_authority.key, true)?;
-    validate_token_account(user_wrapper_token_account, user_authority.key, false)?;
-    validate_token_account(reserve_token_2022_token_account, reserve_authority.key, true)?;
+    validate_token_account(user_token_2022_token_account, user_authority.key, token_2022_mint.key, true)?;
+    validate_token_account(user_wrapper_token_account, user_authority.key, wrapper_token_mint.key, false)?;
+    validate_token_account(reserve_token_2022_token_account, reserve_authority.key, token_2022_mint.key, true)?;
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
     let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;

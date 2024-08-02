@@ -119,6 +119,7 @@ pub fn assert_reserve_authority_token_account(
 pub fn validate_token_account(
     token_account_info: &AccountInfo,
     expected_owner: &Pubkey,
+    expected_mint: &Pubkey,
     is_token_2022: bool
 ) -> ProgramResult {
     let token_account_data = token_account_info.try_borrow_data()?;
@@ -130,7 +131,7 @@ pub fn validate_token_account(
     };
 
     assert_with_msg(
-        &token_account.base.owner == expected_owner && token_account_info.owner == &expected_program_owner,
+        &token_account.base.owner == expected_owner && token_account_info.owner == &expected_program_owner && &token_account.base.mint == expected_mint,
         TokenWrapperError::InvalidTokenAccount,
         "Incorrect token account"
     )
