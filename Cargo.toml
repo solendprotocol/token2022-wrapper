@@ -2,17 +2,20 @@
 name = "token2022-wrapper"
 version = "0.1.0"
 edition = "2021"
+
+[lib]
 crate-type = ["cdylib", "lib"]
+name = "token2022_wrapper"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 shank = "=0.4.2"
 solana-program = "2.0.1"
-spl-token = "6.0.0"
-spl-token-2022 = "4.0.0"
+spl-token = { version = "6.0.0", features = ["no-entrypoint"]}
+spl-token-2022 = { version = "4.0.0", features = ["no-entrypoint"]}
 num_enum = "=0.5.9"
-spl-associated-token-account = "4.0.0"
+spl-associated-token-account = { version = "4.0.0", features = ["no-entrypoint"]}
 itertools = "0.13.0"
 thiserror = "1.0"
 
