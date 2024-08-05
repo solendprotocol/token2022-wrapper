@@ -1,7 +1,7 @@
 import * as web3 from "@solana/web3.js";
 import { TokenWrapperInstruction } from "../types";
 import { PROGRAM_ID, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, SYSTEM_PROGRAM_ID, RENT_SYSVAR } from "../constants";
-import { getReserveAuthority, getReserveAuthorityTokenAccount, getWrapperTokenMint } from "utils";
+import { getReserveAuthority, getReserveAuthorityTokenAccount, getWrapperTokenMint } from "../utils";
 
 const BufferLayout = require("buffer-layout");
 

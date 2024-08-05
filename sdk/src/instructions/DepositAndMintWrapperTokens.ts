@@ -1,7 +1,7 @@
 import * as web3 from "@solana/web3.js";
 import { TokenWrapperInstruction } from "../types";
 import { PROGRAM_ID, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, SYSTEM_PROGRAM_ID, RENT_SYSVAR, ASSOCIATED_TOKEN_PROGRAM_ID } from "../constants";
-import { getReserveAuthority, getReserveAuthorityTokenAccount, getWrapperTokenMint } from "utils";
+import { getReserveAuthority, getReserveAuthorityTokenAccount, getWrapperTokenMint } from "../utils";
 import * as Layout from "../types/layout";
 import BN from "bn.js";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
