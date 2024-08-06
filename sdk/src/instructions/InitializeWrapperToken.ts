@@ -15,7 +15,7 @@ export const createInitializeWrapperTokenInstruction = (
         ]
     );
 
-    const data = BufferLayout.alloc(dataLayout.span);
+    const data = Buffer.alloc(dataLayout.span);
     dataLayout.encode(
         {
             instruction: TokenWrapperInstruction.InitializeWrapperToken
