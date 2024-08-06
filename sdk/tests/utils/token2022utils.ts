@@ -14,7 +14,7 @@ export const initializeMints2022 = async (
     console.log(`Starting to create ${numMints} T22 mints`);
     let mints: web3.PublicKey[] = [];
   
-    let authorityKeypair = await createKeypair(connection);
+    let authorityKeypair = await createKeypair(connection, true);
     const extensions = [ExtensionType.TransferFeeConfig];
     const mintLen = getMintLen(extensions);
     const mintLamports = await connection.getMinimumBalanceForRentExemption(mintLen);
@@ -41,7 +41,7 @@ export const initializeMints2022 = async (
                 authorityKeypair.publicKey,
                 authorityKeypair.publicKey,
                 transferFeeBps[i],
-                BigInt(transferFeeBps[i]),
+                BigInt(transferFeeBps[i] * (10 ** decimal)),
                 TOKEN_2022_PROGRAM_ID
             ),
             // createInitializeNonTransferableMintInstruction(mint, TOKEN_2022_PROGRAM_ID),
@@ -87,7 +87,7 @@ export const initializeMints2022 = async (
                 TOKEN_2022_PROGRAM_ID
             );
 
-            console.log("Minted 10,000 to: ", recipient.toString());
+            console.log(`Minted 10,000 tokens to: ${sourceAccount.toString()} owned by: ${recipient.toString()}`);
         })
       mints.push(tokenMint);
       i++;

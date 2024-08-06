@@ -24,7 +24,7 @@ export const createWithdrawAndBurnWrapperTokensInstruction = async (
     const data = Buffer.alloc(dataLayout.span);
     dataLayout.encode(
         {
-            instruction: TokenWrapperInstruction.DepositAndMintWrapperTokens,
+            instruction: TokenWrapperInstruction.WithdrawAndBurnWrapperTokens,
             amount: new BN(amount)
         },
         data
