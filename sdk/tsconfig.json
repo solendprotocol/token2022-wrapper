@@ -1,20 +1,19 @@
 {
-    "compilerOptions": {
-      "baseUrl": "src",
-      "module": "commonjs",
-      "target": "es2015",
-      "esModuleInterop": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-      "strict": true,
-      "declaration": true,
-      "types": ["mocha", "node"],
-      "paths": {
-        "@instructions/*": ["instructions/*"],
-        "@types/*": ["types/*"]
-      },
-      "outDir": "./dist"
+  "compilerOptions": {
+    "baseUrl": "src",
+    "module": "commonjs",
+    "target": "es2015",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "strict": true,
+    "declaration": true,
+    "types": ["mocha", "node"],
+    "paths": {
+      "@instructions/*": ["instructions/*"],
+      "@types/*": ["types/*"]
     },
-    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"]
-  }
-  
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"]
+}

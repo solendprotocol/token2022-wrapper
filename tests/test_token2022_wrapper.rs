@@ -1770,7 +1770,9 @@ mod tests {
                                         println!(
                                             "Could not parse error code from the BanksClientError"
                                         );
-                                        panic!("Could not parse error code from the BanksClientError");
+                                        panic!(
+                                            "Could not parse error code from the BanksClientError"
+                                        );
                                     }
                                 };
                             }
@@ -1913,13 +1915,19 @@ mod tests {
                                 let _ = match extract_error_code(e.to_string().as_str()) {
                                     Some(error_code) => {
                                         assert_with_msg(
-                                            error_code == TokenWrapperError::UnexpectedWrapperToken as u32,
-                                            format!("Invalid error thrown for test_16: {}", e).as_str(),
+                                            error_code
+                                                == TokenWrapperError::UnexpectedWrapperToken as u32,
+                                            format!("Invalid error thrown for test_16: {}", e)
+                                                .as_str(),
                                         );
                                     }
                                     None => {
-                                        println!("Could not parse error code from the BanksClientError");
-                                        panic!("Could not parse error code from the BanksClientError");
+                                        println!(
+                                            "Could not parse error code from the BanksClientError"
+                                        );
+                                        panic!(
+                                            "Could not parse error code from the BanksClientError"
+                                        );
                                     }
                                 };
                             }

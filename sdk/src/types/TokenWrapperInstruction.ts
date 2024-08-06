@@ -1,5 +1,5 @@
 export enum TokenWrapperInstruction {
-    InitializeWrapperToken = 0,
-    DepositAndMintWrapperTokens = 1,
-    WithdrawAndBurnWrapperTokens = 2,
+  InitializeWrapperToken = 0,
+  DepositAndMintWrapperTokens = 1,
+  WithdrawAndBurnWrapperTokens = 2,
 }

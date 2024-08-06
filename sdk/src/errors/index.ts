@@ -5,11 +5,11 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-type ErrorWithCode = Error & { code: number }
-type MaybeErrorWithCode = ErrorWithCode | null | undefined
+type ErrorWithCode = Error & { code: number };
+type MaybeErrorWithCode = ErrorWithCode | null | undefined;
 
-const createErrorFromCodeLookup: Map<number, () => ErrorWithCode> = new Map()
-const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map()
+const createErrorFromCodeLookup: Map<number, () => ErrorWithCode> = new Map();
+const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map();
 
 /**
  * UnexpectedWrapperToken: 'Unexpected wrapper token mint'
@@ -18,21 +18,21 @@ const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map()
  * @category generated
  */
 export class UnexpectedWrapperTokenError extends Error {
-  readonly code: number = 0x0
-  readonly name: string = 'UnexpectedWrapperToken'
+  readonly code: number = 0x0;
+  readonly name: string = "UnexpectedWrapperToken";
   constructor() {
-    super('Unexpected wrapper token mint')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedWrapperTokenError)
+    super("Unexpected wrapper token mint");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedWrapperTokenError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x0, () => new UnexpectedWrapperTokenError())
+createErrorFromCodeLookup.set(0x0, () => new UnexpectedWrapperTokenError());
 createErrorFromNameLookup.set(
-  'UnexpectedWrapperToken',
+  "UnexpectedWrapperToken",
   () => new UnexpectedWrapperTokenError()
-)
+);
 
 /**
  * UnexpectedTokenProgram: 'Unexpected SPL Token Program'
@@ -41,21 +41,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedTokenProgramError extends Error {
-  readonly code: number = 0x1
-  readonly name: string = 'UnexpectedTokenProgram'
+  readonly code: number = 0x1;
+  readonly name: string = "UnexpectedTokenProgram";
   constructor() {
-    super('Unexpected SPL Token Program')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedTokenProgramError)
+    super("Unexpected SPL Token Program");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedTokenProgramError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1, () => new UnexpectedTokenProgramError())
+createErrorFromCodeLookup.set(0x1, () => new UnexpectedTokenProgramError());
 createErrorFromNameLookup.set(
-  'UnexpectedTokenProgram',
+  "UnexpectedTokenProgram",
   () => new UnexpectedTokenProgramError()
-)
+);
 
 /**
  * UnexpectedToken2022Program: 'Unexpected Token 2022 Program'
@@ -64,21 +64,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedToken2022ProgramError extends Error {
-  readonly code: number = 0x2
-  readonly name: string = 'UnexpectedToken2022Program'
+  readonly code: number = 0x2;
+  readonly name: string = "UnexpectedToken2022Program";
   constructor() {
-    super('Unexpected Token 2022 Program')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedToken2022ProgramError)
+    super("Unexpected Token 2022 Program");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedToken2022ProgramError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x2, () => new UnexpectedToken2022ProgramError())
+createErrorFromCodeLookup.set(0x2, () => new UnexpectedToken2022ProgramError());
 createErrorFromNameLookup.set(
-  'UnexpectedToken2022Program',
+  "UnexpectedToken2022Program",
   () => new UnexpectedToken2022ProgramError()
-)
+);
 
 /**
  * UnexpectedSystemProgram: 'Unexpected System Program'
@@ -87,21 +87,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedSystemProgramError extends Error {
-  readonly code: number = 0x3
-  readonly name: string = 'UnexpectedSystemProgram'
+  readonly code: number = 0x3;
+  readonly name: string = "UnexpectedSystemProgram";
   constructor() {
-    super('Unexpected System Program')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedSystemProgramError)
+    super("Unexpected System Program");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedSystemProgramError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x3, () => new UnexpectedSystemProgramError())
+createErrorFromCodeLookup.set(0x3, () => new UnexpectedSystemProgramError());
 createErrorFromNameLookup.set(
-  'UnexpectedSystemProgram',
+  "UnexpectedSystemProgram",
   () => new UnexpectedSystemProgramError()
-)
+);
 
 /**
  * UnexpectedRent: 'Unexpected Rent'
@@ -110,18 +110,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedRentError extends Error {
-  readonly code: number = 0x4
-  readonly name: string = 'UnexpectedRent'
+  readonly code: number = 0x4;
+  readonly name: string = "UnexpectedRent";
   constructor() {
-    super('Unexpected Rent')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedRentError)
+    super("Unexpected Rent");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedRentError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x4, () => new UnexpectedRentError())
-createErrorFromNameLookup.set('UnexpectedRent', () => new UnexpectedRentError())
+createErrorFromCodeLookup.set(0x4, () => new UnexpectedRentError());
+createErrorFromNameLookup.set(
+  "UnexpectedRent",
+  () => new UnexpectedRentError()
+);
 
 /**
  * InvalidTokenAccount: 'Invalid token account'
@@ -130,21 +133,21 @@ createErrorFromNameLookup.set('UnexpectedRent', () => new UnexpectedRentError())
  * @category generated
  */
 export class InvalidTokenAccountError extends Error {
-  readonly code: number = 0x5
-  readonly name: string = 'InvalidTokenAccount'
+  readonly code: number = 0x5;
+  readonly name: string = "InvalidTokenAccount";
   constructor() {
-    super('Invalid token account')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidTokenAccountError)
+    super("Invalid token account");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidTokenAccountError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x5, () => new InvalidTokenAccountError())
+createErrorFromCodeLookup.set(0x5, () => new InvalidTokenAccountError());
 createErrorFromNameLookup.set(
-  'InvalidTokenAccount',
+  "InvalidTokenAccount",
   () => new InvalidTokenAccountError()
-)
+);
 
 /**
  * InvalidTokenMint: 'Invalid token mint'
@@ -153,21 +156,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidTokenMintError extends Error {
-  readonly code: number = 0x6
-  readonly name: string = 'InvalidTokenMint'
+  readonly code: number = 0x6;
+  readonly name: string = "InvalidTokenMint";
   constructor() {
-    super('Invalid token mint')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidTokenMintError)
+    super("Invalid token mint");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, InvalidTokenMintError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x6, () => new InvalidTokenMintError())
+createErrorFromCodeLookup.set(0x6, () => new InvalidTokenMintError());
 createErrorFromNameLookup.set(
-  'InvalidTokenMint',
+  "InvalidTokenMint",
   () => new InvalidTokenMintError()
-)
+);
 
 /**
  * UnexpectedReserveTokenAccount: 'Unexpected reserve token account'
@@ -176,12 +179,12 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedReserveTokenAccountError extends Error {
-  readonly code: number = 0x7
-  readonly name: string = 'UnexpectedReserveTokenAccount'
+  readonly code: number = 0x7;
+  readonly name: string = "UnexpectedReserveTokenAccount";
   constructor() {
-    super('Unexpected reserve token account')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedReserveTokenAccountError)
+    super("Unexpected reserve token account");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedReserveTokenAccountError);
     }
   }
 }
@@ -189,11 +192,11 @@ export class UnexpectedReserveTokenAccountError extends Error {
 createErrorFromCodeLookup.set(
   0x7,
   () => new UnexpectedReserveTokenAccountError()
-)
+);
 createErrorFromNameLookup.set(
-  'UnexpectedReserveTokenAccount',
+  "UnexpectedReserveTokenAccount",
   () => new UnexpectedReserveTokenAccountError()
-)
+);
 
 /**
  * UnexpectedReserveAuthority: 'Unexpected reserve authority'
@@ -202,21 +205,21 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class UnexpectedReserveAuthorityError extends Error {
-  readonly code: number = 0x8
-  readonly name: string = 'UnexpectedReserveAuthority'
+  readonly code: number = 0x8;
+  readonly name: string = "UnexpectedReserveAuthority";
   constructor() {
-    super('Unexpected reserve authority')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, UnexpectedReserveAuthorityError)
+    super("Unexpected reserve authority");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, UnexpectedReserveAuthorityError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x8, () => new UnexpectedReserveAuthorityError())
+createErrorFromCodeLookup.set(0x8, () => new UnexpectedReserveAuthorityError());
 createErrorFromNameLookup.set(
-  'UnexpectedReserveAuthority',
+  "UnexpectedReserveAuthority",
   () => new UnexpectedReserveAuthorityError()
-)
+);
 
 /**
  * ExpectedOwnerWrapperProgram: 'Expected account to be owned by wrapper program'
@@ -225,21 +228,24 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class ExpectedOwnerWrapperProgramError extends Error {
-  readonly code: number = 0x9
-  readonly name: string = 'ExpectedOwnerWrapperProgram'
+  readonly code: number = 0x9;
+  readonly name: string = "ExpectedOwnerWrapperProgram";
   constructor() {
-    super('Expected account to be owned by wrapper program')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, ExpectedOwnerWrapperProgramError)
+    super("Expected account to be owned by wrapper program");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, ExpectedOwnerWrapperProgramError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x9, () => new ExpectedOwnerWrapperProgramError())
-createErrorFromNameLookup.set(
-  'ExpectedOwnerWrapperProgram',
+createErrorFromCodeLookup.set(
+  0x9,
   () => new ExpectedOwnerWrapperProgramError()
-)
+);
+createErrorFromNameLookup.set(
+  "ExpectedOwnerWrapperProgram",
+  () => new ExpectedOwnerWrapperProgramError()
+);
 
 /**
  * MissingSigner: 'Missing signer'
@@ -248,18 +254,18 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class MissingSignerError extends Error {
-  readonly code: number = 0xa
-  readonly name: string = 'MissingSigner'
+  readonly code: number = 0xa;
+  readonly name: string = "MissingSigner";
   constructor() {
-    super('Missing signer')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, MissingSignerError)
+    super("Missing signer");
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, MissingSignerError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0xa, () => new MissingSignerError())
-createErrorFromNameLookup.set('MissingSigner', () => new MissingSignerError())
+createErrorFromCodeLookup.set(0xa, () => new MissingSignerError());
+createErrorFromNameLookup.set("MissingSigner", () => new MissingSignerError());
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
@@ -267,8 +273,8 @@ createErrorFromNameLookup.set('MissingSigner', () => new MissingSignerError())
  * @category generated
  */
 export function errorFromCode(code: number): MaybeErrorWithCode {
-  const createError = createErrorFromCodeLookup.get(code)
-  return createError != null ? createError() : null
+  const createError = createErrorFromCodeLookup.get(code);
+  return createError != null ? createError() : null;
 }
 
 /**
@@ -277,6 +283,6 @@ export function errorFromCode(code: number): MaybeErrorWithCode {
  * @category generated
  */
 export function errorFromName(name: string): MaybeErrorWithCode {
-  const createError = createErrorFromNameLookup.get(name)
-  return createError != null ? createError() : null
+  const createError = createErrorFromNameLookup.get(name);
+  return createError != null ? createError() : null;
 }

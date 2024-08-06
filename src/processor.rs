@@ -1,7 +1,6 @@
 use solana_program::rent::Rent;
 use solana_program::sysvar::Sysvar;
 use solana_program::{
-    system_program,
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
     msg,
@@ -9,19 +8,22 @@ use solana_program::{
     program_error::ProgramError,
     program_pack::Pack,
     pubkey::Pubkey,
+    system_program,
 };
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
 use spl_token_2022::extension::ExtensionType;
 
 use crate::error::TokenWrapperError;
-use crate::utils::{assert_associated_token_program, assert_with_msg, create_account, validate_mint, validate_token_account};
+use crate::utils::{
+    assert_associated_token_program, assert_with_msg, create_account, validate_mint,
+    validate_token_account,
+};
 use crate::{
     instruction::TokenWrapperInstruction,
     utils::{
-        assert_rent,
-        assert_reserve_authority, assert_reserve_authority_token_account, assert_system_program,
-        assert_token_2022_program, assert_token_program,
+        assert_rent, assert_reserve_authority, assert_reserve_authority_token_account,
+        assert_system_program, assert_token_2022_program, assert_token_program,
         assert_wrapper_token_mint, get_reserve_authority, get_reserve_authority_token_account,
         get_wrapper_token_mint,
     },
@@ -72,7 +74,11 @@ pub fn process_initialize_wrapper_token(
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    assert_with_msg(payer.is_signer, TokenWrapperError::MissingSigner, "The payer account needs to be a signer")?;
+    assert_with_msg(
+        payer.is_signer,
+        TokenWrapperError::MissingSigner,
+        "The payer account needs to be a signer",
+    )?;
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, false)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
@@ -81,7 +87,7 @@ pub fn process_initialize_wrapper_token(
         *reserve_authority.key,
         *program_id,
         reserve_token_2022_token_account,
-        false
+        false,
     )?;
 
     assert_token_program(*token_program.key)?;
@@ -106,17 +112,19 @@ pub fn process_initialize_wrapper_token(
     let rent = Rent::get().unwrap();
 
     create_account(
-        &payer, 
+        &payer,
         &wrapper_token_mint,
         system_program,
         &spl_token::id(),
         &rent,
         mint_data_length,
-        wrapper_token_mint_seeds.clone()
+        wrapper_token_mint_seeds.clone(),
     )?;
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;
+    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<
+        spl_token_2022::state::Mint,
+    >::unpack(&token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data_parsed.base.decimals;
     drop(token_2022_mint_data);
 
@@ -151,13 +159,13 @@ pub fn process_initialize_wrapper_token(
     let rent = Rent::get().unwrap();
 
     create_account(
-        &payer, 
+        &payer,
         &reserve_token_2022_token_account,
         system_program,
         &spl_token_2022::id(),
         &rent,
         token_account_data_length,
-        reserve_token_account_seeds.clone()
+        reserve_token_account_seeds.clone(),
     )?;
 
     invoke(
@@ -217,7 +225,11 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let associated_token_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    assert_with_msg(user_authority.is_signer, TokenWrapperError::MissingSigner, "The user authority needs to be a signer")?;
+    assert_with_msg(
+        user_authority.is_signer,
+        TokenWrapperError::MissingSigner,
+        "The user authority needs to be a signer",
+    )?;
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, true)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
@@ -226,7 +238,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         *reserve_authority.key,
         *program_id,
         reserve_token_2022_token_account,
-        true
+        true,
     )?;
 
     assert_token_program(*token_program.key)?;
@@ -236,7 +248,9 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     assert_rent(*rent_sysvar.key)?;
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;
+    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<
+        spl_token_2022::state::Mint,
+    >::unpack(&token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data_parsed.base.decimals;
     drop(token_2022_mint_data);
 
@@ -265,12 +279,30 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;
 
-    validate_token_account(user_token_2022_token_account, user_authority.key, token_2022_mint.key, true)?;
-    validate_token_account(user_wrapper_token_account, user_authority.key, wrapper_token_mint.key, false)?;
-    validate_token_account(reserve_token_2022_token_account, reserve_authority.key, token_2022_mint.key, true)?;
+    validate_token_account(
+        user_token_2022_token_account,
+        user_authority.key,
+        token_2022_mint.key,
+        true,
+    )?;
+    validate_token_account(
+        user_wrapper_token_account,
+        user_authority.key,
+        wrapper_token_mint.key,
+        false,
+    )?;
+    validate_token_account(
+        reserve_token_2022_token_account,
+        reserve_authority.key,
+        token_2022_mint.key,
+        true,
+    )?;
 
-    let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
-    let reserve_token_2022_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(&reserve_token_2022_token_account_data)?;
+    let reserve_token_2022_token_account_data =
+        reserve_token_2022_token_account.try_borrow_data()?;
+    let reserve_token_2022_data_parsed = spl_token_2022::extension::StateWithExtensions::<
+        spl_token_2022::state::Account,
+    >::unpack(&reserve_token_2022_token_account_data)?;
     let pre_transfer_balance = reserve_token_2022_data_parsed.base.amount;
     drop(reserve_token_2022_token_account_data);
 
@@ -296,8 +328,11 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         ],
     )?;
 
-    let reserve_token_2022_token_account_data = reserve_token_2022_token_account.try_borrow_data()?;
-    let reserve_token_2022_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(&reserve_token_2022_token_account_data)?;
+    let reserve_token_2022_token_account_data =
+        reserve_token_2022_token_account.try_borrow_data()?;
+    let reserve_token_2022_data_parsed = spl_token_2022::extension::StateWithExtensions::<
+        spl_token_2022::state::Account,
+    >::unpack(&reserve_token_2022_token_account_data)?;
     let post_transfer_balance = reserve_token_2022_data_parsed.base.amount;
     drop(reserve_token_2022_token_account_data);
 
@@ -309,7 +344,9 @@ pub fn process_deposit_and_mint_wrapper_tokens(
         user_wrapper_token_account.key,
         reserve_authority.key,
         &[reserve_authority.key],
-        post_transfer_balance.checked_sub(pre_transfer_balance).unwrap(),
+        post_transfer_balance
+            .checked_sub(pre_transfer_balance)
+            .unwrap(),
         token_2022_decimals,
     )?;
 
@@ -353,7 +390,11 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     let system_program = next_account_info(accounts_info_iter)?;
     let rent_sysvar = next_account_info(accounts_info_iter)?;
 
-    assert_with_msg(user_authority.is_signer, TokenWrapperError::MissingSigner, "The user authority needs to be a signer")?;
+    assert_with_msg(
+        user_authority.is_signer,
+        TokenWrapperError::MissingSigner,
+        "The user authority needs to be a signer",
+    )?;
 
     assert_wrapper_token_mint(*token_2022_mint.key, *program_id, wrapper_token_mint, true)?;
     assert_reserve_authority(*token_2022_mint.key, *program_id, reserve_authority)?;
@@ -362,7 +403,7 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         *reserve_authority.key,
         *program_id,
         reserve_token_2022_token_account,
-        true
+        true,
     )?;
 
     assert_token_program(*token_program.key)?;
@@ -373,12 +414,29 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;
 
-    validate_token_account(user_token_2022_token_account, user_authority.key, token_2022_mint.key, true)?;
-    validate_token_account(user_wrapper_token_account, user_authority.key, wrapper_token_mint.key, false)?;
-    validate_token_account(reserve_token_2022_token_account, reserve_authority.key, token_2022_mint.key, true)?;
+    validate_token_account(
+        user_token_2022_token_account,
+        user_authority.key,
+        token_2022_mint.key,
+        true,
+    )?;
+    validate_token_account(
+        user_wrapper_token_account,
+        user_authority.key,
+        wrapper_token_mint.key,
+        false,
+    )?;
+    validate_token_account(
+        reserve_token_2022_token_account,
+        reserve_authority.key,
+        token_2022_mint.key,
+        true,
+    )?;
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
-    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&token_2022_mint_data)?;
+    let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<
+        spl_token_2022::state::Mint,
+    >::unpack(&token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data_parsed.base.decimals;
     drop(token_2022_mint_data);
 

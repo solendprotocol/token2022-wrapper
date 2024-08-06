@@ -8,9 +8,9 @@ use solana_program::{
 };
 
 /// This function is copied from Phoenix-v1 repository by Ellipsis Labs
-/// 
+///
 /// https://github.com/Ellipsis-Labs/phoenix-v1/blob/master/src/program/system_utils.rs#L10
-/// 
+///
 pub fn create_account<'a, 'info>(
     payer: &'a AccountInfo<'info>,
     new_account: &'a AccountInfo<'info>,
