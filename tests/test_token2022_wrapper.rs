@@ -22,7 +22,7 @@ use utils::{
     test_transfer_fee_config_with_keypairs, TransferFeeConfigWithKeypairs,
 };
 
-pub const PROGRAM_ID: Pubkey = pubkey!("B7aQx94uA3crMRRqeQgfcBQeGiCPZunDeS9fH7ywjrci");
+pub const PROGRAM_ID: Pubkey = pubkey!("22WrapbNKwPSy3HcGQTTJpgv43tszbZdTEfBEWmGYX2V");
 
 pub async fn create_and_mint_tokens(
     client: &mut TestClient,

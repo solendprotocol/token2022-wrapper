@@ -10,4 +10,4 @@ use solana_program::entrypoint;
 #[cfg(not(feature = "no-entrypoint"))]
 entrypoint!(process_instruction);
 
-solana_program::declare_id!("B7aQx94uA3crMRRqeQgfcBQeGiCPZunDeS9fH7ywjrci");
+solana_program::declare_id!("22WrapbNKwPSy3HcGQTTJpgv43tszbZdTEfBEWmGYX2V");
