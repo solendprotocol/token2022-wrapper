@@ -12,18 +12,20 @@ const main = async () => {
   );
 
   // TODO - Place the Token22 mint for which you wanna initialize the wrapper mint here
-  let token2022Mint = new web3.PublicKey("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
+  let token2022Mint = new web3.PublicKey(
+    "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo"
+  );
 
-   //@ts-ignore
-   let privateKeyArray = JSON.parse(process.env.PRIVATE_KEY);
+  //@ts-ignore
+  let privateKeyArray = JSON.parse(process.env.PRIVATE_KEY);
 
-   let payerKeypair = web3.Keypair.fromSecretKey(
-     Uint8Array.from(privateKeyArray)
-   );
+  let payerKeypair = web3.Keypair.fromSecretKey(
+    Uint8Array.from(privateKeyArray)
+  );
 
   await delay(1_000);
 
-	let ixs = token2022WrapperSdk.requestComputeUnits(500_000, 100_000);
+  let ixs = token2022WrapperSdk.requestComputeUnits(500_000, 100_000);
 
   // Initialize a wrapper token mint
   let initializeIx =
@@ -32,22 +34,26 @@ const main = async () => {
       token2022Mint
     );
 
-	ixs.push(initializeIx);
+  ixs.push(initializeIx);
 
-  const expectedWrapperTokenMint = token2022WrapperSdk.getWrapperTokenMint(token2022Mint);
+  const expectedWrapperTokenMint =
+    token2022WrapperSdk.getWrapperTokenMint(token2022Mint);
 
   let initializeTx = new web3.Transaction();
-	
-	ixs.forEach((ix) => {
-		initializeTx.add(ix)
-	});
 
-	console.log("Initializing wrapper token mint for: ", token2022Mint.toString());
-	console.log("Initializer: ", payerKeypair.publicKey.toString());
+  ixs.forEach((ix) => {
+    initializeTx.add(ix);
+  });
+
+  console.log(
+    "Initializing wrapper token mint for: ",
+    token2022Mint.toString()
+  );
+  console.log("Initializer: ", payerKeypair.publicKey.toString());
 
   console.log("Token 2022 mint: ", token2022Mint.toString());
   console.log("Wrapper token mint: ", expectedWrapperTokenMint.toString());
-	
+
   initializeTx.recentBlockhash = (
     await connection.getLatestBlockhash()
   ).blockhash;
