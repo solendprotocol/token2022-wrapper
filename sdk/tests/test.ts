@@ -5,15 +5,6 @@ import { initializeMints2022 } from "./utils/token2022utils";
 import { createAssociatedTokenAccountIdempotent } from "@solana/spl-token";
 import BN from "bn.js";
 
-/**
- * 1. create and mint test SPL token -- done
- * 2. create associated token account -- done
- * 3. create T22 token account -- done
- * 4. create and mint test T22 token -- done
- * 7. basic test initialize
- * 8. basic test depositMint
- * 9. basic test withdrawBurn
- */
 const main = async () => {
   // Create a token and mint it to users
 
