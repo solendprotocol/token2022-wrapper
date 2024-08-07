@@ -18,7 +18,7 @@ export const initializeMints = async (
   console.log(`Starting to create ${numMints} SPL mints`);
   let mints: web3.PublicKey[] = [];
 
-  let keypair = await createKeypair(connection);
+  let keypair = await createKeypair(connection, true);
 
   let i = 0;
   for (let _ of Array(numMints)) {
