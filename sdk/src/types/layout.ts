@@ -35,25 +35,3 @@ export const uint64 = (property = "uint64"): unknown => {
 
   return layout;
 };
-
-/**
- * Layout for a boolean value
- */
-export const bool = (property = "bool"): unknown => {
-  const layout = BufferLayout.u8(property);
-
-  const _decode = layout.decode.bind(layout);
-  const _encode = layout.encode.bind(layout);
-
-  layout.decode = (buffer: Buffer, offset: number) => {
-    const value = _decode(buffer, offset);
-    return value !== 0;
-  };
-
-  layout.encode = (boolValue: boolean, buffer: Buffer, offset: number) => {
-    const value = boolValue ? 1 : 0;
-    return _encode(value, buffer, offset);
-  };
-
-  return layout;
-};

@@ -41,7 +41,6 @@ pub fn create_deposit_and_mint_wrapper_tokens_instruction(
     user_wrapper_token_account: &Pubkey,
     user_token_2022_token_account: &Pubkey,
     amount: u64,
-    use_max_amount: bool,
 ) -> Instruction {
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(*token_2022_mint, crate::id());
     let (reserve_authority, _, _) = get_reserve_authority(*token_2022_mint, crate::id());
@@ -53,7 +52,6 @@ pub fn create_deposit_and_mint_wrapper_tokens_instruction(
     instruction_data
         .extend_from_slice(&TokenWrapperInstruction::DepositAndMintWrapperTokens.to_vec());
     instruction_data.extend_from_slice(&amount.to_le_bytes());
-    instruction_data.push(use_max_amount as u8);
 
     Instruction {
         program_id: crate::id(),
@@ -81,7 +79,6 @@ pub fn create_withdraw_and_burn_wrapper_tokens_instruction(
     user_wrapper_token_account: &Pubkey,
     user_token_2022_token_account: &Pubkey,
     amount: u64,
-    use_max_amount: bool,
 ) -> Instruction {
     let (wrapper_token_mint, _, _) = get_wrapper_token_mint(*token_2022_mint, crate::id());
     let (reserve_authority, _, _) = get_reserve_authority(*token_2022_mint, crate::id());
@@ -93,7 +90,6 @@ pub fn create_withdraw_and_burn_wrapper_tokens_instruction(
     instruction_data
         .extend_from_slice(&TokenWrapperInstruction::WithdrawAndBurnWrapperTokens.to_vec());
     instruction_data.extend_from_slice(&amount.to_le_bytes());
-    instruction_data.push(use_max_amount as u8);
 
     Instruction {
         program_id: crate::id(),
