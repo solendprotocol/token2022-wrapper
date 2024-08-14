@@ -336,10 +336,18 @@ mod tests {
                 panic!("Expected test_3 to fail, but succeeded");
             }
             Err(e) => {
-                assert_with_msg(
-                    e.to_string().contains("incorrect program id"),
-                    "Expected test_3 to fail with incorrect program id",
-                );
+                let _ = match extract_error_code(e.to_string().as_str()) {
+                    Some(error_code) => {
+                        assert_with_msg(
+                            error_code == TokenWrapperError::InvalidTokenMint as u32,
+                            format!("Invalid error thrown for test_3: {}", e).as_str(),
+                        );
+                    }
+                    None => {
+                        println!("Could not parse error code from the BanksClientError");
+                        panic!("Could not parse error code from the BanksClientError");
+                    }
+                };
             }
         };
     }
@@ -404,6 +412,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -507,6 +516,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -610,6 +620,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -713,6 +724,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -811,6 +823,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -913,6 +926,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account_secondary,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1005,6 +1019,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1102,6 +1117,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1137,6 +1153,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1248,6 +1265,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1283,6 +1301,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1394,6 +1413,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1429,6 +1449,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1540,6 +1561,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1575,6 +1597,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1687,6 +1710,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1722,6 +1746,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper_burn,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1863,6 +1888,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1898,6 +1924,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account_duplicate,
                             amount_wrapper_burn,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -2005,6 +2032,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -2059,6 +2087,7 @@ mod tests {
                             &user_2_wrapper_token_account,
                             &user_2_token_2022_token_account,
                             amount_wrapper_burn,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -2184,6 +2213,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -2274,6 +2304,7 @@ mod tests {
                             &user_2_wrapper_token_account,
                             &user_2_token_2022_token_account,
                             amount_wrapper_burn,
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -2319,6 +2350,154 @@ mod tests {
             Err(e) => {
                 println!("Error initializing token mint: {}", e);
                 panic!("test_18 error: {}", e);
+            }
+        };
+    }
+
+    /// Test 19 - burn test tokens using use_max_amount = true
+    ///
+    ///
+    #[tokio::test]
+    async fn test_19() {
+        let mut test_client = TestClient::new().await;
+        let payer_keypair = test_client.get_payer_clone();
+
+        let user = Keypair::new();
+        let _ = airdrop(&mut test_client, &user.pubkey(), 5 * LAMPORTS_PER_SOL).await;
+
+        let decimal_2022 = 5_u8;
+        let amount_2022 = 10_000u64 * 10_u64.pow(decimal_2022 as u32);
+        let amount_wrapper = amount_2022 / 2;
+
+        let (token_2022_mint, user_token_2022_token_account) = create_and_mint_tokens_token_2022(
+            &mut test_client,
+            &user.pubkey(),
+            amount_2022,
+            decimal_2022,
+            None,
+        )
+        .await;
+
+        let (wrapper_token_mint, _, _) = get_wrapper_token_mint(token_2022_mint, PROGRAM_ID);
+
+        let user_wrapper_token_account =
+            get_associated_token_address(&user.pubkey(), &wrapper_token_mint);
+
+        let user_token_2022_before_balance =
+            get_token_balance(&mut test_client, &user_token_2022_token_account).await;
+        let user_wrapper_before_balance =
+            get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+
+        let token_2022_data = get_token_mint(&mut test_client, &token_2022_mint)
+            .await
+            .unwrap();
+
+        assert_with_msg(
+            token_2022_data.decimals == decimal_2022,
+            "Invalid token_2022 decimals",
+        );
+
+        let initialize_ix =
+            create_initialize_wrapper_token_instruction(&payer_keypair.pubkey(), &token_2022_mint);
+
+        let _ = match sign_send_instructions(
+            &mut test_client,
+            &vec![initialize_ix],
+            vec![&payer_keypair],
+            None,
+        )
+        .await
+        {
+            Ok(_sig) => {
+                let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
+                    &user.pubkey(),
+                    &token_2022_mint,
+                    &user_wrapper_token_account,
+                    &user_token_2022_token_account,
+                    amount_wrapper,
+                    false,
+                );
+
+                let _ = match sign_send_instructions(
+                    &mut test_client,
+                    &vec![deposit_ix],
+                    vec![&user, &payer_keypair],
+                    None,
+                )
+                .await
+                {
+                    Ok(_sig) => {
+                        let user_token_2022_after_balance =
+                            get_token_balance(&mut test_client, &user_token_2022_token_account)
+                                .await;
+                        let user_wrapper_after_balance =
+                            get_token_balance(&mut test_client, &user_wrapper_token_account).await;
+
+                        assert_with_msg(
+                            user_token_2022_after_balance
+                                == user_token_2022_before_balance - amount_wrapper,
+                            "Invalid user Token2022 token balance change",
+                        );
+                        assert_with_msg(
+                            (user_wrapper_after_balance
+                                == user_wrapper_before_balance + amount_wrapper)
+                                && (user_wrapper_after_balance == amount_wrapper),
+                            "Invalid user wrapper token balance change",
+                        );
+
+                        let burn_ix = create_withdraw_and_burn_wrapper_tokens_instruction(
+                            &user.pubkey(),
+                            &token_2022_mint,
+                            &user_wrapper_token_account,
+                            &user_token_2022_token_account,
+                            amount_wrapper - 10, // Pass lesser tokens deliberately
+                            true,
+                        );
+
+                        let _ = match sign_send_instructions(
+                            &mut test_client,
+                            &vec![burn_ix],
+                            vec![&user, &payer_keypair],
+                            None,
+                        )
+                        .await
+                        {
+                            Ok(_) => {
+                                let user_token_2022_after_burn_balance = get_token_balance(
+                                    &mut test_client,
+                                    &user_token_2022_token_account,
+                                )
+                                .await;
+                                let user_wrapper_after_burn_balance = get_token_balance(
+                                    &mut test_client,
+                                    &user_wrapper_token_account,
+                                )
+                                .await;
+
+                                assert_with_msg(
+                                    user_token_2022_before_balance
+                                        == user_token_2022_after_burn_balance,
+                                    "Invalid user Token2022 token after burn balance change",
+                                );
+                                assert_with_msg(
+                                    user_wrapper_after_burn_balance == 0,
+                                    "Invalid user wrapper token after burn balance change",
+                                );
+                            }
+                            Err(e) => {
+                                println!("Error burning wrapper tokens transaction: {}", e);
+                            }
+                        };
+                    }
+                    Err(e) => {
+                        println!("Error minting wrapper tokens: {}", e);
+                        panic!("test_19 error: {}", e);
+                    }
+                };
+            }
+            Err(e) => {
+                println!("Error initializing token mint: {}", e);
+                panic!("test_19 error: {}", e);
             }
         };
     }

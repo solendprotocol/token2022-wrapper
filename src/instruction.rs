@@ -79,20 +79,6 @@ impl TokenWrapperInstruction {
         })
     }
 
-    pub fn unpack_u64(input: &[u8]) -> Result<(u64, &[u8]), ProgramError> {
-        if input.len() < 8 {
-            msg!("u64 cannot be unpacked");
-            return Err(ProgramError::InvalidInstructionData);
-        }
-        let (bytes, rest) = input.split_at(8);
-        let value = bytes
-            .get(..8)
-            .and_then(|slice| slice.try_into().ok())
-            .map(u64::from_le_bytes)
-            .ok_or(ProgramError::InvalidInstructionData)?;
-        Ok((value, rest))
-    }
-
     pub fn unpack_u64_and_bool(input: &[u8]) -> Result<(u64, bool, &[u8]), ProgramError> {
         if input.len() < 9 {
             msg!("u64 and bool cannot be unpacked");
