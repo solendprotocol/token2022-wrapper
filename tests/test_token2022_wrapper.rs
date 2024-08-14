@@ -303,7 +303,6 @@ mod tests {
     /// Test 3 - cannot initialize for an spl token
     ///
     ///
-    /// TODO - Fix test
     #[tokio::test]
     async fn test_3() {
         let mut test_client = TestClient::new().await;
@@ -337,10 +336,18 @@ mod tests {
                 panic!("Expected test_3 to fail, but succeeded");
             }
             Err(e) => {
-                assert_with_msg(
-                    e.to_string().contains("incorrect program id"),
-                    "Expected test_3 to fail with incorrect program id",
-                );
+                let _ = match extract_error_code(e.to_string().as_str()) {
+                    Some(error_code) => {
+                        assert_with_msg(
+                            error_code == TokenWrapperError::InvalidTokenMint as u32,
+                            format!("Invalid error thrown for test_3: {}", e).as_str(),
+                        );
+                    }
+                    None => {
+                        println!("Could not parse error code from the BanksClientError");
+                        panic!("Could not parse error code from the BanksClientError");
+                    }
+                };
             }
         };
     }
