@@ -45,14 +45,16 @@ pub fn process_instruction(
             process_initialize_wrapper_token(program_id, accounts)
         }
         TokenWrapperInstruction::DepositAndMintWrapperTokens => {
-            let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
+            let (amount, use_max_amount, _) = TokenWrapperInstruction::unpack_u64_and_bool(data)?;
+            msg!("DepositAndMintWrapperTokens --> use_max_amount: {}", use_max_amount);
 
-            process_deposit_and_mint_wrapper_tokens(program_id, accounts, amount)
+            process_deposit_and_mint_wrapper_tokens(program_id, accounts, amount, use_max_amount)
         }
         TokenWrapperInstruction::WithdrawAndBurnWrapperTokens => {
-            let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
+            let (amount, use_max_amount, _) = TokenWrapperInstruction::unpack_u64_and_bool(data)?;
+            msg!("WithdrawAndBurnWrapperTokens --> use_max_amount: {}", use_max_amount);
 
-            process_withdraw_and_burn_wrapper_tokens(program_id, accounts, amount)
+            process_withdraw_and_burn_wrapper_tokens(program_id, accounts, amount, use_max_amount)
         }
     }
 }
@@ -208,6 +210,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
+    use_max_amount: bool
 ) -> ProgramResult {
     msg!("TokenWrapperInstruction::DepositAndMintWrapperTokens");
 
@@ -374,6 +377,7 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
+    use_max_amount: bool
 ) -> ProgramResult {
     msg!("TokenWrapperInstruction::WithdrawAndBurnWrapperTokens");
 
