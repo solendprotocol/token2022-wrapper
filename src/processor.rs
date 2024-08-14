@@ -46,13 +46,19 @@ pub fn process_instruction(
         }
         TokenWrapperInstruction::DepositAndMintWrapperTokens => {
             let (amount, use_max_amount, _) = TokenWrapperInstruction::unpack_u64_and_bool(data)?;
-            msg!("DepositAndMintWrapperTokens --> use_max_amount: {}", use_max_amount);
+            msg!(
+                "DepositAndMintWrapperTokens --> use_max_amount: {}",
+                use_max_amount
+            );
 
             process_deposit_and_mint_wrapper_tokens(program_id, accounts, amount, use_max_amount)
         }
         TokenWrapperInstruction::WithdrawAndBurnWrapperTokens => {
             let (amount, use_max_amount, _) = TokenWrapperInstruction::unpack_u64_and_bool(data)?;
-            msg!("WithdrawAndBurnWrapperTokens --> use_max_amount: {}", use_max_amount);
+            msg!(
+                "WithdrawAndBurnWrapperTokens --> use_max_amount: {}",
+                use_max_amount
+            );
 
             process_withdraw_and_burn_wrapper_tokens(program_id, accounts, amount, use_max_amount)
         }
@@ -210,7 +216,7 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
-    use_max_amount: bool
+    use_max_amount: bool,
 ) -> ProgramResult {
     msg!("TokenWrapperInstruction::DepositAndMintWrapperTokens");
 
@@ -383,7 +389,7 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
-    use_max_amount: bool
+    use_max_amount: bool,
 ) -> ProgramResult {
     msg!("TokenWrapperInstruction::WithdrawAndBurnWrapperTokens");
 
@@ -443,9 +449,9 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         true,
     )?;
 
-    let user_wrapper_token_account_data =
-        user_wrapper_token_account.try_borrow_data()?;
-    let user_wrapper_token_account_data_parsed = <spl_token::state::Account>::unpack(&user_wrapper_token_account_data)?;
+    let user_wrapper_token_account_data = user_wrapper_token_account.try_borrow_data()?;
+    let user_wrapper_token_account_data_parsed =
+        <spl_token::state::Account>::unpack(&user_wrapper_token_account_data)?;
     let user_wrapper_token_balance = user_wrapper_token_account_data_parsed.amount;
     drop(user_wrapper_token_account_data);
 

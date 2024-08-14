@@ -412,7 +412,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -516,7 +516,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -620,7 +620,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -724,7 +724,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -823,7 +823,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -926,7 +926,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account_secondary,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1019,7 +1019,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1117,7 +1117,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1153,7 +1153,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1265,7 +1265,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1301,7 +1301,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1413,7 +1413,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1449,7 +1449,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1561,7 +1561,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1597,7 +1597,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1710,7 +1710,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1746,7 +1746,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper_burn,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -1888,7 +1888,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -1924,7 +1924,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account_duplicate,
                             amount_wrapper_burn,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -2032,7 +2032,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -2087,7 +2087,7 @@ mod tests {
                             &user_2_wrapper_token_account,
                             &user_2_token_2022_token_account,
                             amount_wrapper_burn,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -2213,7 +2213,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -2304,7 +2304,7 @@ mod tests {
                             &user_2_wrapper_token_account,
                             &user_2_token_2022_token_account,
                             amount_wrapper_burn,
-                            false
+                            false,
                         );
 
                         let _ = match sign_send_instructions(
@@ -2415,7 +2415,7 @@ mod tests {
                     &user_wrapper_token_account,
                     &user_token_2022_token_account,
                     amount_wrapper,
-                    false
+                    false,
                 );
 
                 let _ = match sign_send_instructions(
@@ -2451,7 +2451,7 @@ mod tests {
                             &user_wrapper_token_account,
                             &user_token_2022_token_account,
                             amount_wrapper - 10, // Pass lesser tokens deliberately
-                            true
+                            true,
                         );
 
                         let _ = match sign_send_instructions(

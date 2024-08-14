@@ -78,7 +78,8 @@ const main = async () => {
       userB.publicKey,
       userBToken2022Account,
       token2022Mint,
-      depositAmount
+      depositAmount,
+      false
     );
 
   let depositTx = new web3.Transaction().add(depositIx);
@@ -123,7 +124,8 @@ const main = async () => {
       userB.publicKey,
       userBToken2022Account,
       token2022Mint,
-      withdrawAmount
+      withdrawAmount,
+      false
     );
 
   let withdrawTx = new web3.Transaction().add(withdrawIx);

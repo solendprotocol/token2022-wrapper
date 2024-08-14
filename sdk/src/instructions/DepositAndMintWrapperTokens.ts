@@ -23,11 +23,13 @@ export const createDepositAndMintWrapperTokensInstruction = async (
   userAuthority: web3.PublicKey,
   userToken2022TokenAccount: web3.PublicKey,
   token2022Mint: web3.PublicKey,
-  amount: number | BN
+  amount: number | BN,
+  useMaxAmount: boolean
 ): Promise<web3.TransactionInstruction> => {
   const dataLayout = BufferLayout.struct([
     BufferLayout.u8("instruction"),
     Layout.uint64("amount"),
+    Layout.bool("useMaxAmount"),
   ]);
 
   const data = Buffer.alloc(dataLayout.span);
@@ -35,6 +37,7 @@ export const createDepositAndMintWrapperTokensInstruction = async (
     {
       instruction: TokenWrapperInstruction.DepositAndMintWrapperTokens,
       amount: new BN(amount),
+      useMaxAmount: useMaxAmount,
     },
     data
   );
