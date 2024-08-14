@@ -48,6 +48,10 @@ pub fn create_deposit_and_mint_wrapper_tokens_instruction(
     let (reserve_token_2022_token_account, _, _) =
         get_reserve_authority_token_account(*token_2022_mint, reserve_authority, crate::id());
 
+    let mut instruction_data = Vec::with_capacity(9);
+    instruction_data.extend_from_slice(&amount.to_le_bytes());
+    instruction_data.push(false as u8);
+    
     Instruction {
         program_id: crate::id(),
         accounts: vec![
@@ -64,11 +68,7 @@ pub fn create_deposit_and_mint_wrapper_tokens_instruction(
             AccountMeta::new_readonly(spl_associated_token_account::id(), false),
             AccountMeta::new_readonly(sysvar::rent::id(), false),
         ],
-        data: [
-            TokenWrapperInstruction::DepositAndMintWrapperTokens.to_vec(),
-            amount.to_le_bytes().to_vec(),
-        ]
-        .concat(),
+        data: instruction_data,
     }
 }
 
@@ -85,6 +85,10 @@ pub fn create_withdraw_and_burn_wrapper_tokens_instruction(
     let (reserve_token_2022_token_account, _, _) =
         get_reserve_authority_token_account(*token_2022_mint, reserve_authority, crate::id());
 
+    let mut instruction_data = Vec::with_capacity(9);
+    instruction_data.extend_from_slice(&amount.to_le_bytes());
+    instruction_data.push(true as u8);
+    
     Instruction {
         program_id: crate::id(),
         accounts: vec![
@@ -100,10 +104,6 @@ pub fn create_withdraw_and_burn_wrapper_tokens_instruction(
             AccountMeta::new_readonly(system_program::id(), false),
             AccountMeta::new_readonly(sysvar::rent::id(), false),
         ],
-        data: [
-            TokenWrapperInstruction::WithdrawAndBurnWrapperTokens.to_vec(),
-            amount.to_le_bytes().to_vec(),
-        ]
-        .concat(),
+        data: instruction_data,
     }
 }
