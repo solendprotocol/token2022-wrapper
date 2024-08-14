@@ -309,6 +309,12 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     let pre_transfer_balance = reserve_token_2022_data_parsed.base.amount;
     drop(reserve_token_2022_token_account_data);
 
+    let mut amount = amount;
+
+    if use_max_amount {
+        amount = pre_transfer_balance;
+    }
+
     let user_deposit_ix = spl_token_2022::instruction::transfer_checked(
         token_2022_program.key,
         user_token_2022_token_account.key,
@@ -436,6 +442,18 @@ pub fn process_withdraw_and_burn_wrapper_tokens(
         token_2022_mint.key,
         true,
     )?;
+
+    let user_wrapper_token_account_data =
+        user_wrapper_token_account.try_borrow_data()?;
+    let user_wrapper_token_account_data_parsed = <spl_token::state::Account>::unpack(&user_wrapper_token_account_data)?;
+    let user_wrapper_token_balance = user_wrapper_token_account_data_parsed.amount;
+    drop(user_wrapper_token_account_data);
+
+    let mut amount = amount;
+
+    if use_max_amount {
+        amount = user_wrapper_token_balance;
+    }
 
     let token_2022_mint_data = token_2022_mint.try_borrow_data()?;
     let token_2022_mint_data_parsed = spl_token_2022::extension::StateWithExtensions::<
