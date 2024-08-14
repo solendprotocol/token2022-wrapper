@@ -50,7 +50,7 @@ pub fn process_instruction(
         }
         TokenWrapperInstruction::WithdrawAndBurnWrapperTokens => {
             let (amount, _) = TokenWrapperInstruction::unpack_u64(data)?;
-            
+
             process_withdraw_and_burn_wrapper_tokens(program_id, accounts, amount)
         }
     }

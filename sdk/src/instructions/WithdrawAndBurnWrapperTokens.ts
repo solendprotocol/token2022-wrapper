@@ -22,7 +22,7 @@ export const createWithdrawAndBurnWrapperTokensInstruction = async (
   userAuthority: web3.PublicKey,
   userToken2022TokenAccount: web3.PublicKey,
   token2022Mint: web3.PublicKey,
-  amount: number | BN,
+  amount: number | BN
 ): Promise<web3.TransactionInstruction> => {
   const dataLayout = BufferLayout.struct([
     BufferLayout.u8("instruction"),
