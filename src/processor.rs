@@ -8,7 +8,6 @@ use solana_program::{
     program_error::ProgramError,
     program_pack::Pack,
     pubkey::Pubkey,
-    system_program,
 };
 use spl_associated_token_account::tools::account::get_account_len;
 use spl_token::state::Mint;
@@ -254,28 +253,6 @@ pub fn process_deposit_and_mint_wrapper_tokens(
     >::unpack(&token_2022_mint_data)?;
     let token_2022_decimals = token_2022_mint_data_parsed.base.decimals;
     drop(token_2022_mint_data);
-
-    if user_wrapper_token_account.owner == &system_program::id() {
-        let ata_init_ix =
-            spl_associated_token_account::instruction::create_associated_token_account(
-                user_authority.key,
-                user_authority.key,
-                wrapper_token_mint.key,
-                token_program.key,
-            );
-
-        invoke(
-            &ata_init_ix,
-            &[
-                user_authority.clone(),
-                user_wrapper_token_account.clone(),
-                wrapper_token_mint.clone(),
-                system_program.clone(),
-                token_program.clone(),
-                associated_token_program.clone(),
-            ],
-        )?;
-    }
 
     validate_mint(token_2022_mint, true)?;
     validate_mint(wrapper_token_mint, false)?;

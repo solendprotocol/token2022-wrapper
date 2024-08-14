@@ -406,6 +406,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -510,6 +517,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -614,6 +628,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -718,6 +739,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -817,6 +845,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -920,6 +955,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint_secondary,
@@ -1013,6 +1055,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -1111,6 +1160,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -1259,6 +1315,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -1407,6 +1470,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -1555,6 +1625,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -1704,6 +1781,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -1882,6 +1966,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -2026,6 +2117,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -2207,6 +2305,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
@@ -2409,6 +2514,13 @@ mod tests {
         .await
         {
             Ok(_sig) => {
+                let _ = create_associated_token_account(
+                    &mut test_client, 
+                    &user.pubkey(), 
+                    &wrapper_token_mint, 
+                    &spl_token::id()
+                ).await;
+                
                 let deposit_ix = create_deposit_and_mint_wrapper_tokens_instruction(
                     &user.pubkey(),
                     &token_2022_mint,
